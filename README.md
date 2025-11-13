@@ -112,11 +112,14 @@ CREATE TABLE commentaire(
 
 ---
 ## 5) Plan d'action
+
 - Frontend (Nassim)
 - Backend (Lucas)
 - Base de données (Marceau)
 - Intégration API TMDB (Chadi & Rebecca)
 - Conteneurisation (Rebecca)
 - Orchestration (Chadi)
+
+---
 
 ##### _Projet personnel – Libre d’utilisation et d’adaptation._
