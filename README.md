@@ -68,7 +68,7 @@ L’utilisateur peut rechercher, filtrer, marquer les films vus ou non vus, et d
 ---
 ## 3) Terminaisons
 
-Pas besoin de faire des endpoints car on va utilisé Jinja pour rendre les templates. 
+Pas besoin de faire des endpoints car on va utiliser Jinja pour rendre les templates. 
 
 - GET - /home
 - (GET,POST) - /register
@@ -109,7 +109,7 @@ CREATE TABLE commentaire(
    FOREIGN KEY(ID_user) REFERENCES users(ID_user),
    FOREIGN KEY(ID_film) REFERENCES films(ID_film)
 );
-
+```
 ---
 ## 5) Plan d'action
 
