@@ -1,0 +1,9 @@
+__pycache__/
+.vscode/
+*.log
+Thumbs.db
+node_modules/
+Pipfile.lock
+poetry.lock
+.git/
+.env
