@@ -1,13 +1,13 @@
-Membres : 
+# CAHIER DES CHARGES : BadMovie
+Ce projet est une application web permettant d’afficher, gérer et noter une liste de films.  
+L’utilisateur peut rechercher, filtrer, marquer les films vus ou non vus, et donner ses propres avis.
+
+### Membres : 
 - Nassim EL HADDAD
 - Rebecca RINGUET
 - Lucas DREANO
 - Chadi MANGLE
 - Marceau GILLIO BARBARET
-
-# CAHIER DES CHARGES : BadMovie
-Ce projet est une application web permettant d’afficher, gérer et noter une liste de films.  
-L’utilisateur peut rechercher, filtrer, marquer les films vus ou non vus, et donner ses propres avis.
  
 ## 1) Fonctionnalités principales
 
