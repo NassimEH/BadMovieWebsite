@@ -1,28 +1,9 @@
-# Environment files
-.env
-
-# Python cache
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# Database files
-*.sqlite*
-*.db
-
-# Editor/IDE
 .vscode/
-.idea/
-
-# Logs
 *.log
-
-# OS files
 Thumbs.db
-.DS_Store
-
-# Dependencies
 node_modules/
 Pipfile.lock
 poetry.lock
+.git/
+.env
