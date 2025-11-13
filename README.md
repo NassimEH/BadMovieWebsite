@@ -3,6 +3,7 @@ Membres :
 - Rebecca RINGUET
 - Lucas DREANO
 - Chadi MANGLE
+- Marceau GILLIO BARBARET
 
 # CAHIER DES CHARGES : BadMovie
 Ce projet est une application web permettant d’afficher, gérer et noter une liste de films.  
