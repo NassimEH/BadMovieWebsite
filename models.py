@@ -1,8 +1,10 @@
-from flask_sqlalchemy import SQLAlchemy
+"""Modèles de données pour l'application BadMovie."""
 from flask_login import UserMixin
-from app import db
+from extensions import db
+
 
 class User(db.Model, UserMixin):
+    """Modèle utilisateur."""
     __tablename__ = 'users'
     ID_user = db.Column(db.Integer, primary_key=True)
     nom = db.Column(db.String(50), nullable=False)
@@ -10,7 +12,13 @@ class User(db.Model, UserMixin):
     mail = db.Column(db.String(50), unique=True, nullable=False)
     commentaires = db.relationship('Commentaire', backref='user', lazy=True)
 
+    def get_id(self):
+        """Retourne l'ID utilisateur pour Flask-Login."""
+        return self.ID_user
+
+
 class Film(db.Model):
+    """Modèle film."""
     __tablename__ = 'movies'
     ID_film = db.Column(db.Integer, primary_key=True)
     image = db.Column(db.String(200))
@@ -20,10 +28,12 @@ class Film(db.Model):
     category = db.Column(db.String(50))
     commentaires = db.relationship('Commentaire', backref='film', lazy=True)
 
+
 class Commentaire(db.Model):
+    """Modèle commentaire/avis utilisateur sur un film."""
     __tablename__ = 'commentaires'
     ID_user = db.Column(db.Integer, db.ForeignKey('users.ID_user'), primary_key=True)
-    ID_film = db.Column(db.Integer, db.ForeignKey('films.ID_film'), primary_key=True)
+    ID_film = db.Column(db.Integer, db.ForeignKey('movies.ID_film'), primary_key=True)
     watched = db.Column(db.Boolean, default=False)
     score_user = db.Column(db.Integer)
     avis_user = db.Column(db.String(255))
