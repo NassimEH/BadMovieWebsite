@@ -5,6 +5,98 @@
   box-sizing: border-box;
 }
 
+/* Styles pour les sections de catégories (titres uniquement) */
+.categories {
+  position: relative;
+  /* padding-left matches banner/play left offset (default 100px) */
+  padding: 60px 100px;
+  overflow: hidden;
+  color: #ffffff;
+}
+
+.categories .container {
+  position: relative;
+  z-index: 3; /* au-dessus du fond flou */
+}
+
+.categories h2 {
+  color: #ffffff;
+  /* reuse .play styles: uppercase, letter-spacing, weight and similar size */
+  text-transform: uppercase;
+  font-weight: 500;
+  letter-spacing: 1px;
+  font-size: 1.2em; /* matches .play */
+  margin: 20px 0 28px;
+  position: relative;
+  display: block; /* ensure left alignment */
+  padding-bottom: 12px;
+}
+
+.categories h2::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 0;
+  width: 100px;
+  height: 4px;
+  /* force blue underline for section titles */
+  background: #0066ff;
+  border-radius: 3px;
+  bottom: -6px; /* push the bar slightly below the text */
+}
+
+.categories::before {
+  /* Reuse banner background image and blur it for a soft backdrop */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('../images/movies/bg-little-mermaid.jpg');
+  background-size: cover;
+  background-position: center;
+  filter: blur(8px) brightness(0.25);
+  transform: scale(1.05);
+  z-index: 1;
+}
+
+.categories::after {
+  /* overlay sombre pour lisibilité */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 2;
+}
+
+@media (max-width: 991px) {
+  .categories {
+    /* when banner left is 50px (see banner rules), match padding-left to align */
+    padding: 40px 50px;
+  }
+
+  .categories h2 {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 600px) {
+  /* banner left becomes 30px at small widths; match categories padding-left */
+  .categories {
+    padding: 40px 30px;
+  }
+}
+
+/* Layout des catégories : empiler verticalement et réserver de l'espace */
+.category {
+  margin-bottom: 40px;
+}
+
+.category-content-placeholder {
+  /* espace réservé pour les futurs vignettes/galeries */
+  min-height: 140px;
+  width: 100%;
+}
+
 :root {
   --primary: #0066ff;
 }
