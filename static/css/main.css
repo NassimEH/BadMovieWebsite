@@ -20,9 +20,10 @@ header {
   left: 0;
   width: 100%;
   display: flex;
-  justify-content: center; /* center header content horizontally */
+  justify-content: space-between; /* logo left, nav centered (absolute), header-right right */
   align-items: center;
-  padding: 30px 100px;
+  /* left padding removed so logo sits at the very left of the page */
+  padding: 30px 100px 30px 0;
   z-index: 10;
 }
 
@@ -31,6 +32,7 @@ header {
   color: #fff;
   letter-spacing: 2px;
   font-weight: 800;
+  margin-left: 20px; /* small breathing space from the left edge */
 }
 
 .nav {
@@ -59,16 +61,24 @@ header {
   color: var(--primary);
 }
 
+/* header right group (search + auth buttons) */
+.header-right {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  z-index: 20;
+}
+
 /* Auth buttons in header: reuse banner button styles */
 .auth-buttons {
   display: flex;
   gap: 10px;
   align-items: center;
-  position: absolute;
-  right: 100px; /* place to the right of the search */
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 20;
+  position: relative;
 }
 
 .auth-btn {
@@ -115,17 +125,6 @@ header {
 
 .search input::placeholder {
   color: #ffffff;
-header {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  display: flex;
-  justify-content: space-between; /* logo left, nav centered (absolute), header-right right */
-  align-items: center;
-  padding: 30px 100px;
-  z-index: 10;
-}
 }
 
 .search .fa-search {
