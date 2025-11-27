@@ -1,227 +1,198 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <header>
-      <a href="{{ url_for('index') }}" class="logo">BadMovie</a>
-      <ul class="nav">
-        <li>
-          <a href="{{ url_for('index') }}" title="Accueil"><i class="fa fa-home" aria-hidden="true"></i> </a>
-        </li>
-        <li><a href="{{ url_for('movies.list_movies') }}">Tous les films</a></li>
-        <li><a href="#">Ma Liste</a></li>
-        <li><a href="#">Tendances</a></li>
-      </ul>
-      <div class="header-right">
-        <div class="search">
-          <input type="text" placeholder="Rechercher" />
-          <i class="fa fa-search" aria-hidden="true"></i>
-        </div>
-        <!-- Auth buttons (Connexion / Inscription) placed to the right of the search -->
-        <div class="auth-buttons">
-          {% if current_user.is_authenticated %}
-            <a href="{{ url_for('auth.logout') }}" class="auth-btn">Déconnexion</a>
-            <span class="user-name">{{ current_user.nom }}</span>
-          {% else %}
-            <a href="{{ url_for('auth.login') }}" class="auth-btn">Connexion</a>
-            <a href="{{ url_for('auth.sign_up') }}" class="auth-btn auth-btn-outline">Inscription</a>
-          {% endif %}
-        </div>
-      </div>
-    </header>
-    <div class="banner">
-      <div class="content the-little-mermaid active">
-        <img
-          class="movie-title"
-          src="{{ url_for('static', filename='images/the-little-mermaid-title.png') }}"
-          alt="La Petite Sirène"
-        />
-        <h4>
-          <span>2023</span>
-          <span><i>12+</i></span>
-          <span>2h 14min</span>
-          <span>Fantastique</span>
-        </h4>
-        <p>
-          Ariel, une jeune et curieuse sirène, rêve de découvrir le monde des humains. Lorsqu'elle tombe amoureuse du prince Eric, elle conclut un pacte avec la sorcière des mers Ursula, échangeant sa voix contre des jambes. Dans cette adaptation live-action du classique Disney, plongez dans un océan de magie, de romance et d'aventures épiques où l'amour transcende les frontières entre deux mondes.
-        </p>
-        <div class="button">
-          <a href="#"><i class="fa fa-play" aria-hidden="true"></i> Regarder</a>
-          <a href="#"><i class="fa fa-plus" aria-hidden="true"></i> Ma Liste</a>
-        </div>
-      </div>
-      <div class="content bg-65">
-        <img
-          class="movie-title"
-          src="{{ url_for('static', filename='images/the-65-title.png') }}"
-          alt="65"
-        />
-        <h4>
-          <span>2023</span>
-          <span><i>15+</i></span>
-          <span>1h 33min</span>
-          <span>Science-Fiction</span>
-        </h4>
-        <p>
-          Après un crash sur une planète inconnue il y a 65 millions d'années, le pilote Mills découvre qu'il n'a atterri que sur la Terre préhistorique. Avec une seule chance de survie, Mills et la seule autre survivante, Koa, doivent traverser un territoire dangereux rempli de créatures préhistoriques féroces dans une course contre la montre pour échapper à l'extinction imminente.
-        </p>
-        <div class="button">
-          <a href="#"><i class="fa fa-play" aria-hidden="true"></i> Regarder</a>
-          <a href="#"><i class="fa fa-plus" aria-hidden="true"></i> Ma Liste</a>
-        </div>
-      </div>
-      <div class="content the-covenant">
-        <img
-          class="movie-title"
-          src="{{ url_for('static', filename='images/the-covenant-title.png') }}"
-          alt="Le Pacte"
-        />
-        <h4>
-          <span>2023</span>
-          <span><i>12+</i></span>
-          <span>2h 03min</span>
-          <span>Guerre</span>
-        </h4>
-        <p>
-          En Afghanistan, le sergent John Kinley et son interprète local Ahmed forment une équipe soudée. Lors d'une mission, Kinley est gravement blessé et Ahmed le sauve au péril de sa vie. De retour aux États-Unis, Kinley découvre qu'Ahmed et sa famille sont menacés par les Talibans. Il retourne alors en Afghanistan pour honorer sa dette et sauver ceux qui lui ont sauvé la vie.
-        </p>
-        <div class="button">
-          <a href="#"><i class="fa fa-play" aria-hidden="true"></i> Regarder</a>
-          <a href="#"><i class="fa fa-plus" aria-hidden="true"></i> Ma Liste</a>
-        </div>
-      </div>
-      <div class="content the-black-demon">
-        <img
-          class="movie-title"
-          src="{{ url_for('static', filename='images/the-black-demon-title.png') }}"
-          alt="Le Démon Noir"
-        />
-        <h4>
-          <span>2023</span>
-          <span><i>16+</i></span>
-          <span>1h 40min</span>
-          <span>Thriller</span>
-        </h4>
-        <p>
-          Paul Sturges emmène sa famille dans une station pétrolière abandonnée au large des côtes mexicaines pour des vacances. Mais ce qui devait être un séjour paisible se transforme en cauchemar lorsqu'une créature préhistorique légendaire, un requin géant connu sous le nom de "Démon Noir", commence à les traquer. La famille doit lutter pour sa survie contre cette force de la nature impitoyable.
-        </p>
-        <div class="button">
-          <a href="#"><i class="fa fa-play" aria-hidden="true"></i> Regarder</a>
-          <a href="#"><i class="fa fa-plus" aria-hidden="true"></i> Ma Liste</a>
-        </div>
-      </div>
-      <div class="content the-tank">
-        <img
-          class="movie-title"
-          src="{{ url_for('static', filename='images/the-tank-title.png') }}"
-          alt="Le Réservoir"
-        />
-        <h4>
-          <span>2023</span>
-          <span><i>15+</i></span>
-          <span>1h 40min</span>
-          <span>Horreur</span>
-        </h4>
-        <p>
-          En 1978, Ben et sa famille héritent d'une propriété isolée dans l'Oregon. Lorsqu'ils découvrent un mystérieux réservoir souterrain sur leur terrain, ils libèrent par inadvertance une créature terrifiante qui a été piégée pendant des décennies. Alors que la créature se répand dans leur maison, la famille doit lutter pour survivre à cette force maléfique qui menace de les détruire tous.
-        </p>
-        <div class="button">
-          <a href="#"><i class="fa fa-play" aria-hidden="true"></i> Regarder</a>
-          <a href="#"><i class="fa fa-plus" aria-hidden="true"></i> Ma Liste</a>
-        </div>
-      </div>
-      <div class="carousel-box">
-        <div class="carousel">
-          <div
-            class="carousel-item"
-            onClick="changeBg('bg-little-mermaid.jpg', 'the-little-mermaid');"
-          >
-            <img src="{{ url_for('static', filename='images/movies/the-little-mermaid.jpeg') }}" alt="La Petite Sirène" />
-          </div>
-          <div class="carousel-item" onClick="changeBg('bg-65.jpeg', 'bg-65');">
-            <img src="{{ url_for('static', filename='images/movies/65.jpg') }}" alt="65" />
-          </div>
-          <div
-            class="carousel-item"
-            onClick="changeBg('bg-the-covenant.jpeg', 'the-covenant');"
-          >
-            <img src="{{ url_for('static', filename='images/movies/the-covenant.jpg') }}" alt="Le Pacte" />
-          </div>
-          <div
-            class="carousel-item"
-            onClick="changeBg('bg-the-black-demon.jpeg', 'the-black-demon');"
-          >
-            <img src="{{ url_for('static', filename='images/movies/the-black-demon.jpg') }}" alt="Le Démon Noir" />
-          </div>
-          <div
-            class="carousel-item"
-            onClick="changeBg('bg-the-tank.jpeg', 'the-tank');"
-          >
-            <img src="{{ url_for('static', filename='images/movies/the-tank.jpeg') }}" alt="Le Réservoir" />
-          </div>
-        </div>
-      </div>
-      <a href="#" class="play" onClick="toggleVideo()">
-        <i class="fa fa-play-circle-o" aria-hidden="true"></i> Voir la Bande-annonce
-      </a>
-      <ul class="sci">
-        <li>
-          <a href="#" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i></a>
-        </li>
-        <li>
-          <a href="#" title="LinkedIn"><i class="fa fa-linkedin" aria-hidden="true"></i></a>
-        </li>
-        <li>
-          <a href="#" title="YouTube"><i class="fa fa-youtube-play" aria-hidden="true"></i></a>
-        </li>
-        <li>
-          <a href="#" title="X"><i class="fa fa-twitter" aria-hidden="true"></i></a>
-        </li>
-      </ul>
+<header>
+  <a href="{{ url_for('index') }}" class="logo">BadMovie</a>
+  <ul class="nav">
+    <li>
+      <a href="{{ url_for('index') }}" title="Accueil"><i class="fa fa-home" aria-hidden="true"></i> </a>
+    </li>
+    <li><a href="{{ url_for('movies.list_movies') }}">Tous les films</a></li>
+    <li><a href="#">Ma Liste</a></li>
+    <li><a href="#">Tendances</a></li>
+  </ul>
+  <div class="header-right">
+    <!-- Auth buttons (Connexion / Inscription) placed to the right of the search -->
+    <div class="auth-buttons">
+      {% if current_user.is_authenticated %}
+      <a href="{{ url_for('auth.logout') }}" class="auth-btn">Déconnexion</a>
+      <span class="user-name">{{ current_user.nom }}</span>
+      {% else %}
+      <a href="{{ url_for('auth.login') }}" class="auth-btn">Connexion</a>
+      <a href="{{ url_for('auth.sign_up') }}" class="auth-btn auth-btn-outline">Inscription</a>
+      {% endif %}
     </div>
-    <!-- Sections de catégories (titres seulement) -->
-    <section class="categories">
-      <div class="container">
-        <div class="category">
-          <h2>Films d'action</h2>
-          <div class="category-content-placeholder"></div>
-        </div>
-
-        <div class="category">
-          <h2>Films d'horreur</h2>
-          <div class="category-content-placeholder"></div>
-        </div>
-
-        <div class="category">
-          <h2>Films fantastique</h2>
-          <div class="category-content-placeholder"></div>
-        </div>
-
-        <div class="category">
-          <h2>Science-Fiction</h2>
-          <div class="category-content-placeholder"></div>
-        </div>
-      </div>
-    </section>
-    <div class="trailer">
-      <video
-        src="{{ url_for('static', filename='assets/star.mp4') }}"
-        muted
-        controls="true"
-        autoplay="true"
-      ></video>
-      <img
-        class="close"
-        src="{{ url_for('static', filename='images/close.png') }}"
-        alt="fermer"
-        onClick="toggleVideo()"
-      />
+  </div>
+</header>
+<div class="banner">
+  <div class="content the-little-mermaid active">
+    <img class="movie-title" src="{{ url_for('static', filename='images/the-little-mermaid-title.png') }}"
+      alt="La Petite Sirène" />
+    <h4>
+      <span>2023</span>
+      <span><i>12+</i></span>
+      <span>2h 14min</span>
+      <span>Fantastique</span>
+    </h4>
+    <p>
+      Ariel, une jeune et curieuse sirène, rêve de découvrir le monde des humains. Lorsqu'elle tombe amoureuse du prince
+      Eric, elle conclut un pacte avec la sorcière des mers Ursula, échangeant sa voix contre des jambes. Dans cette
+      adaptation live-action du classique Disney, plongez dans un océan de magie, de romance et d'aventures épiques où
+      l'amour transcende les frontières entre deux mondes.
+    </p>
+    <div class="button">
+      <a href="#"><i class="fa fa-play" aria-hidden="true"></i> Regarder</a>
+      <a href="#"><i class="fa fa-plus" aria-hidden="true"></i> Ma Liste</a>
     </div>
+  </div>
+  <div class="content bg-65">
+    <img class="movie-title" src="{{ url_for('static', filename='images/the-65-title.png') }}" alt="65" />
+    <h4>
+      <span>2023</span>
+      <span><i>15+</i></span>
+      <span>1h 33min</span>
+      <span>Science-Fiction</span>
+    </h4>
+    <p>
+      Après un crash sur une planète inconnue il y a 65 millions d'années, le pilote Mills découvre qu'il n'a atterri
+      que sur la Terre préhistorique. Avec une seule chance de survie, Mills et la seule autre survivante, Koa, doivent
+      traverser un territoire dangereux rempli de créatures préhistoriques féroces dans une course contre la montre pour
+      échapper à l'extinction imminente.
+    </p>
+    <div class="button">
+      <a href="#"><i class="fa fa-play" aria-hidden="true"></i> Regarder</a>
+      <a href="#"><i class="fa fa-plus" aria-hidden="true"></i> Ma Liste</a>
+    </div>
+  </div>
+  <div class="content the-covenant">
+    <img class="movie-title" src="{{ url_for('static', filename='images/the-covenant-title.png') }}" alt="Le Pacte" />
+    <h4>
+      <span>2023</span>
+      <span><i>12+</i></span>
+      <span>2h 03min</span>
+      <span>Guerre</span>
+    </h4>
+    <p>
+      En Afghanistan, le sergent John Kinley et son interprète local Ahmed forment une équipe soudée. Lors d'une
+      mission, Kinley est gravement blessé et Ahmed le sauve au péril de sa vie. De retour aux États-Unis, Kinley
+      découvre qu'Ahmed et sa famille sont menacés par les Talibans. Il retourne alors en Afghanistan pour honorer sa
+      dette et sauver ceux qui lui ont sauvé la vie.
+    </p>
+    <div class="button">
+      <a href="#"><i class="fa fa-play" aria-hidden="true"></i> Regarder</a>
+      <a href="#"><i class="fa fa-plus" aria-hidden="true"></i> Ma Liste</a>
+    </div>
+  </div>
+  <div class="content the-black-demon">
+    <img class="movie-title" src="{{ url_for('static', filename='images/the-black-demon-title.png') }}"
+      alt="Le Démon Noir" />
+    <h4>
+      <span>2023</span>
+      <span><i>16+</i></span>
+      <span>1h 40min</span>
+      <span>Thriller</span>
+    </h4>
+    <p>
+      Paul Sturges emmène sa famille dans une station pétrolière abandonnée au large des côtes mexicaines pour des
+      vacances. Mais ce qui devait être un séjour paisible se transforme en cauchemar lorsqu'une créature préhistorique
+      légendaire, un requin géant connu sous le nom de "Démon Noir", commence à les traquer. La famille doit lutter pour
+      sa survie contre cette force de la nature impitoyable.
+    </p>
+    <div class="button">
+      <a href="#"><i class="fa fa-play" aria-hidden="true"></i> Regarder</a>
+      <a href="#"><i class="fa fa-plus" aria-hidden="true"></i> Ma Liste</a>
+    </div>
+  </div>
+  <div class="content the-tank">
+    <img class="movie-title" src="{{ url_for('static', filename='images/the-tank-title.png') }}" alt="Le Réservoir" />
+    <h4>
+      <span>2023</span>
+      <span><i>15+</i></span>
+      <span>1h 40min</span>
+      <span>Horreur</span>
+    </h4>
+    <p>
+      En 1978, Ben et sa famille héritent d'une propriété isolée dans l'Oregon. Lorsqu'ils découvrent un mystérieux
+      réservoir souterrain sur leur terrain, ils libèrent par inadvertance une créature terrifiante qui a été piégée
+      pendant des décennies. Alors que la créature se répand dans leur maison, la famille doit lutter pour survivre à
+      cette force maléfique qui menace de les détruire tous.
+    </p>
+    <div class="button">
+      <a href="#"><i class="fa fa-play" aria-hidden="true"></i> Regarder</a>
+      <a href="#"><i class="fa fa-plus" aria-hidden="true"></i> Ma Liste</a>
+    </div>
+  </div>
+  <div class="carousel-box">
+    <div class="carousel">
+      <div class="carousel-item" onClick="changeBg('bg-little-mermaid.jpg', 'the-little-mermaid');">
+        <img src="{{ url_for('static', filename='images/movies/the-little-mermaid.jpeg') }}" alt="La Petite Sirène" />
+      </div>
+      <div class="carousel-item" onClick="changeBg('bg-65.jpeg', 'bg-65');">
+        <img src="{{ url_for('static', filename='images/movies/65.jpg') }}" alt="65" />
+      </div>
+      <div class="carousel-item" onClick="changeBg('bg-the-covenant.jpeg', 'the-covenant');">
+        <img src="{{ url_for('static', filename='images/movies/the-covenant.jpg') }}" alt="Le Pacte" />
+      </div>
+      <div class="carousel-item" onClick="changeBg('bg-the-black-demon.jpeg', 'the-black-demon');">
+        <img src="{{ url_for('static', filename='images/movies/the-black-demon.jpg') }}" alt="Le Démon Noir" />
+      </div>
+      <div class="carousel-item" onClick="changeBg('bg-the-tank.jpeg', 'the-tank');">
+        <img src="{{ url_for('static', filename='images/movies/the-tank.jpeg') }}" alt="Le Réservoir" />
+      </div>
+    </div>
+  </div>
+  <a href="#" class="play" onClick="toggleVideo()">
+    <i class="fa fa-play-circle-o" aria-hidden="true"></i> Voir la Bande-annonce
+  </a>
+  <ul class="sci">
+    <li>
+      <a href="#" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i></a>
+    </li>
+    <li>
+      <a href="#" title="LinkedIn"><i class="fa fa-linkedin" aria-hidden="true"></i></a>
+    </li>
+    <li>
+      <a href="#" title="YouTube"><i class="fa fa-youtube-play" aria-hidden="true"></i></a>
+    </li>
+    <li>
+      <a href="#" title="X"><i class="fa fa-twitter" aria-hidden="true"></i></a>
+    </li>
+  </ul>
+</div>
+<!-- Sections de catégories (titres seulement) -->
+<section class="categories">
+  <div class="container">
+    <div class="category">
+      <h2>Films d'action</h2>
+      <div class="category-content-placeholder"></div>
+    </div>
+
+    <div class="category">
+      <h2>Films d'horreur</h2>
+      <div class="category-content-placeholder"></div>
+    </div>
+
+    <div class="category">
+      <h2>Films fantastique</h2>
+      <div class="category-content-placeholder"></div>
+    </div>
+
+    <div class="category">
+      <h2>Science-Fiction</h2>
+      <div class="category-content-placeholder"></div>
+    </div>
+  </div>
+</section>
+<div class="trailer">
+  <video src="{{ url_for('static', filename='assets/star.mp4') }}" muted controls="true" autoplay="true"></video>
+  <img class="close" src="{{ url_for('static', filename='images/close.png') }}" alt="fermer" onClick="toggleVideo()" />
+</div>
 {% endblock %}
 
 {% block scripts %}
-    <script type="text/javascript">
-      $(document).ready(function () {
-        $('.carousel').carousel();
-      });
-    </script>
+<script type="text/javascript">
+  $(document).ready(function () {
+    $('.carousel').carousel();
+  });
+</script>
 {% endblock %}
