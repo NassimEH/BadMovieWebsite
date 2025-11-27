@@ -423,3 +423,65 @@ header {
     gap: 15px;
   }
 }
+
+/* Flash Messages */
+.flash-messages {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  max-width: 400px;
+}
+
+.flash-message {
+  padding: 15px 20px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  animation: slideIn 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.flash-success {
+  background: #28a745;
+}
+
+.flash-error {
+  background: #dc3545;
+}
+
+.flash-info {
+  background: #17a2b8;
+}
+
+.close-flash {
+  cursor: pointer;
+  font-size: 1.5rem;
+  margin-left: 15px;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.close-flash:hover {
+  opacity: 1;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* User name in nav */
+.user-name {
+  color: #e94560 !important;
+  font-weight: 600;
+}

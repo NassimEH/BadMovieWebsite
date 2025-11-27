@@ -1,10 +1,19 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from werkzeug.security import check_password_hash, generate_password_hash
-from ..models import User
+from models import User
+from extensions import db
 from flask_login import login_user, login_required, logout_user, current_user
+import secrets
+
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
-@auth.route('/login', methods=['GET', 'POST'])
+def send_confirmation_email(user):
+    """Send confirmation email to user (stub - à implémenter)"""
+    # TODO: Implémenter l'envoi d'email avec SMTP
+    print(f"Email de confirmation envoyé à {user.email} avec token {user.token}")
+    pass
+
+@auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     """Handles user login.
 
@@ -28,17 +37,15 @@ def login():
             elif check_password_hash(user.password, _password):
                 flash('Connecté', category='success')
                 login_user(user, remember=True)
-                return redirect(url_for('views.home'))
+                return redirect(url_for('index'))
             else:
                 flash('Mot de passe incorect', category='error')
         else:
             flash('Aucun compte avec ce nom existe', category='error')
 
- 
+    return render_template("auth/login.html")
 
-    return render_template("page_de_connexion.html")
-
-@auth.route('/sign-up', methods=['GET', 'POST'])
+@auth_bp.route('/sign-up', methods=['GET', 'POST'])
 def sign_up():
     """Handles user registration (sign-up).
 
@@ -74,4 +81,12 @@ def sign_up():
             send_confirmation_email(new_user)
             flash('Un email de confirmation a été envoyé à votre adresse.', category='success')
             return redirect(url_for('auth.login'))
-    return render_template("page_inscription.html")
+    return render_template("auth/register.html")
+
+@auth_bp.route('/logout')
+@login_required
+def logout():
+    """Logs out the current user."""
+    logout_user()
+    flash('Déconnecté avec succès', category='info')
+    return redirect(url_for('auth.login'))
