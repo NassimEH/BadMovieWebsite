@@ -7,7 +7,7 @@ L’utilisateur peut rechercher, filtrer, marquer les films vus ou non vus, et d
 - Rebecca RINGUET
 - Lucas DREANO
 - Chadi MANGLE
-- Marceau GILLIO BARBARET
+- Marceau GILLIO BARBARET 
  
 ## 1) Fonctionnalités principales
 
