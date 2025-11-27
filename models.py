@@ -1,4 +1,4 @@
-"""Modèles de données pour l'application BadMovie."""
+"""Modèles de données pour l'application."""
 from flask_login import UserMixin
 from extensions import db
 
