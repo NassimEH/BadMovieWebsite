@@ -39,6 +39,11 @@ header {
   gap: 20px;
 }
 
+.logo-dot {
+  color: #0066ff;
+}
+
+
 .nav li {
   list-style: none;
   margin: 0 10px;
