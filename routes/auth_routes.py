@@ -2,16 +2,9 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from werkzeug.security import check_password_hash, generate_password_hash
 from models import User
 from extensions import db
-from flask_login import login_user, login_required, logout_user, current_user
-import secrets
+from flask_login import login_user, login_required, logout_user
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
-
-def send_confirmation_email(user):
-    """Send confirmation email to user (stub - à implémenter)"""
-    # TODO: Implémenter l'envoi d'email avec SMTP
-    print(f"Email de confirmation envoyé à {user.email} avec token {user.token}")
-    pass
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -30,11 +23,9 @@ def login():
         _username = request.form.get("username")
         _password = request.form.get("password")
 
-        user = User.query.filter_by(login=_username).first()
+        user = User.query.filter_by(nom=_username).first()
         if user:
-            if user.confirmed == False:
-                flash('e-mail non validé', category='error')
-            elif check_password_hash(user.password, _password):
+            if check_password_hash(user.password, _password):
                 flash('Connecté', category='success')
                 login_user(user, remember=True)
                 return redirect(url_for('index'))
@@ -51,7 +42,7 @@ def sign_up():
 
     If the request method is POST, it retrieves the username, email, and password from the form.
     It checks if the username already exists, validates the email, username, and password length.
-    If all conditions are met, it creates a new user in the database, sends a confirmation email,
+    If all conditions are met, it creates a new user in the database,
     and redirects the user to the login page after successful registration.
 
     Returns:
@@ -64,22 +55,25 @@ def sign_up():
         _email  = request.form.get("email")
         _password = request.form.get("password")
 
-        user = User.query.filter_by(login=_username).first()
-        email = User.query.filter_by(email=_email).first()
+        user = User.query.filter_by(nom=_username).first()
+        email = User.query.filter_by(mail=_email).first()
         if user:
             flash("Compte déjà existant", category='error')
-        elif email : flash(f"email déjà attribuée au compte {email.login}", category='error')
+        elif email : flash(f"email déjà attribuée au compte {email.nom}", category='error')
         elif(len(_email) < 4): flash('Email trop courte', category='error')
         elif(len(_username) < 4): flash('Nom trop court, au moins 4 caractères est nécessaire ', category='error')
         elif(len(_password) < 7): flash('Mot de passe trop court, au moins 7 caractères est nécessaire', category='error')
         
         else : 
-            new_user = User(email=_email, login=_username, name=_username, password=generate_password_hash(_password, method='pbkdf2:sha256'), token= secrets.token_urlsafe(30))
+            new_user = User(
+                mail=_email, 
+                nom=_username, 
+                password=generate_password_hash(_password, method='pbkdf2:sha256')
+            )
 
             db.session.add(new_user)
             db.session.commit()
-            send_confirmation_email(new_user)
-            flash('Un email de confirmation a été envoyé à votre adresse.', category='success')
+            flash('Compte créé avec succès! Vous pouvez maintenant vous connecter.', category='success')
             return redirect(url_for('auth.login'))
     return render_template("auth/register.html")
 
