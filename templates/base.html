@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" />
     <title>{% block title %}BadMovie | Site de Cinéma{% endblock %}</title>
   </head>
-  <body>
+  <body class="body-wrapper">
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
@@ -31,6 +31,64 @@
     {% endwith %}
 
     {% block content %}{% endblock %}
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-container">
+        <div class="footer-content">
+          <div class="footer-section">
+            <h3 class="footer-logo">BadMovie<span class="logo-dot">.</span></h3>
+            <p class="footer-description">
+              Votre destination pour découvrir, noter et partager vos films préférés. 
+              Explorez une vaste collection de films et créez votre liste personnalisée.
+            </p>
+            <div class="footer-social">
+              <a href="#" title="GitHub" aria-label="GitHub"><i class="fa fa-github" aria-hidden="true"></i></a>
+              <a href="#" title="LinkedIn" aria-label="LinkedIn"><i class="fa fa-linkedin" aria-hidden="true"></i></a>
+              <a href="#" title="YouTube" aria-label="YouTube"><i class="fa fa-youtube-play" aria-hidden="true"></i></a>
+              <a href="#" title="X (Twitter)" aria-label="X"><i class="fa fa-twitter" aria-hidden="true"></i></a>
+            </div>
+          </div>
+
+          <div class="footer-section">
+            <h4 class="footer-title">Navigation</h4>
+            <ul class="footer-links">
+              <li><a href="{{ url_for('index') }}">Accueil</a></li>
+              <li><a href="{{ url_for('movies.list_movies') }}">Tous les films</a></li>
+              <li><a href="#">Ma Liste</a></li>
+              <li><a href="#">Tendances</a></li>
+            </ul>
+          </div>
+
+          <div class="footer-section">
+            <h4 class="footer-title">Compte</h4>
+            <ul class="footer-links">
+              {% if current_user.is_authenticated %}
+              <li><a href="{{ url_for('auth.logout') }}">Déconnexion</a></li>
+              {% else %}
+              <li><a href="{{ url_for('auth.login') }}">Connexion</a></li>
+              <li><a href="{{ url_for('auth.sign_up') }}">Inscription</a></li>
+              {% endif %}
+            </ul>
+          </div>
+
+          <div class="footer-section">
+            <h4 class="footer-title">Informations</h4>
+            <ul class="footer-links">
+              <li><a href="#">À propos</a></li>
+              <li><a href="#">Contact</a></li>
+              <li><a href="#">Mentions légales</a></li>
+              <li><a href="#">Politique de confidentialité</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <p>&copy; 2025 BadMovie. Tous droits réservés.</p>
+          <p class="footer-team">Développé par Nassim EL HADDAD, Rebecca RINGUET, Lucas DREANO, Chadi MANGLE, Marceau GILLIO BARBARET</p>
+        </div>
+      </div>
+    </footer>
 
     <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
