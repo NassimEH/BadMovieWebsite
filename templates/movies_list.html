@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="movies-page">
+<header>
+  <a href="{{ url_for('index') }}" class="logo">BadMovie<span class="logo-dot">.</span></a>
+  <ul class="nav">
+    <li>
+      <a href="{{ url_for('index') }}" title="Accueil"><i class="fa fa-home" aria-hidden="true"></i> </a>
+    </li>
+    <li><a href="{{ url_for('movies.list_movies') }}">Tous nos films</a></li>
+    <li><a href="#">Ma Liste</a></li>
+    <li><a href="#">Pour vous</a></li>
+  </ul>
+  <div class="header-right">
+    <div class="auth-buttons">
+      {% if current_user.is_authenticated %}
+      <a href="{{ url_for('auth.logout') }}" class="auth-btn">Déconnexion</a>
+      <span class="user-name">{{ current_user.nom }}</span>
+      {% else %}
+      <a href="{{ url_for('auth.login') }}" class="auth-btn">Connexion</a>
+      <a href="{{ url_for('auth.sign_up') }}" class="auth-btn auth-btn-outline">Inscription</a>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+<!-- Hero Section avec recherche et filtres -->
+<div class="movies-hero">
+  <div class="movies-hero-content">
+    <h1 class="movies-hero-title">Tous nos films</h1>
+    <p class="movies-hero-subtitle">Découvrez notre collection complète de films</p>
+    
+    <!-- Barre de recherche -->
+    <div class="movies-search-container">
+      <div class="search-box">
+        <input type="text" id="movie-search" placeholder="Rechercher un film..." />
+        <i class="fa fa-search" aria-hidden="true"></i>
+      </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="movies-filters">
+      <div class="filter-group">
+        <label for="genre-filter">Genre</label>
+        <select id="genre-filter" class="filter-select">
+          <option value="">Tous les genres</option>
+          <option value="action">Action</option>
+          <option value="horreur">Horreur</option>
+          <option value="fantastique">Fantastique</option>
+          <option value="science-fiction">Science-Fiction</option>
+          <option value="drame">Drame</option>
+          <option value="comédie">Comédie</option>
+          <option value="thriller">Thriller</option>
+          <option value="guerre">Guerre</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label for="year-filter">Année</label>
+        <select id="year-filter" class="filter-select">
+          <option value="">Toutes les années</option>
+          <option value="2024">2024</option>
+          <option value="2023">2023</option>
+          <option value="2022">2022</option>
+          <option value="2021">2021</option>
+          <option value="2020">2020</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="sort-filter">Trier par</label>
+        <select id="sort-filter" class="filter-select">
+          <option value="recent">Plus récents</option>
+          <option value="oldest">Plus anciens</option>
+          <option value="title-asc">Titre (A-Z)</option>
+          <option value="title-desc">Titre (Z-A)</option>
+          <option value="rating">Note</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>&nbsp;</label>
+        <button class="filter-reset-btn" onclick="resetFilters()">
+          <i class="fa fa-refresh" aria-hidden="true"></i> Réinitialiser
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sections de films par catégorie -->
+<section class="categories bg-little-mermaid">
+  <div class="container">
+    <div class="category">
+      <h2>Films d'action</h2>
+      <div class="category-content-placeholder"></div>
+    </div>
+
+    <div class="category">
+      <h2>Films d'horreur</h2>
+      <div class="category-content-placeholder"></div>
+    </div>
+
+    <div class="category">
+      <h2>Films fantastique</h2>
+      <div class="category-content-placeholder"></div>
+    </div>
+
+    <div class="category">
+      <h2>Science-Fiction</h2>
+      <div class="category-content-placeholder"></div>
+    </div>
+
+    <div class="category">
+      <h2>Drame</h2>
+      <div class="category-content-placeholder"></div>
+    </div>
+
+    <div class="category">
+      <h2>Comédie</h2>
+      <div class="category-content-placeholder"></div>
+    </div>
+
+    <div class="category">
+      <h2>Thriller</h2>
+      <div class="category-content-placeholder"></div>
+    </div>
+
+    <div class="category">
+      <h2>Guerre</h2>
+      <div class="category-content-placeholder"></div>
+    </div>
+
+    <div class="category">
+      <h2>Romance</h2>
+      <div class="category-content-placeholder"></div>
+    </div>
+
+    <div class="category">
+      <h2>Animation</h2>
+      <div class="category-content-placeholder"></div>
+    </div>
+
+    <div class="category">
+      <h2>Documentaire</h2>
+      <div class="category-content-placeholder"></div>
+    </div>
+
+    <div class="category">
+      <h2>Biographie</h2>
+      <div class="category-content-placeholder"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Pagination -->
+<div class="pagination-container">
+  <div class="pagination">
+    <button class="pagination-btn" onclick="changePage(-1)" disabled>
+      <i class="fa fa-chevron-left" aria-hidden="true"></i> Précédent
+    </button>
+    <div class="pagination-pages">
+      <button class="pagination-page active" onclick="changePage(1)">1</button>
+      <button class="pagination-page" onclick="changePage(2)">2</button>
+      <button class="pagination-page" onclick="changePage(3)">3</button>
+      <span class="pagination-ellipsis">...</span>
+      <button class="pagination-page" onclick="changePage(10)">10</button>
+    </div>
+    <button class="pagination-btn" onclick="changePage(1)">
+      Suivant <i class="fa fa-chevron-right" aria-hidden="true"></i>
+    </button>
+  </div>
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+  function resetFilters() {
+    document.getElementById('movie-search').value = '';
+    document.getElementById('genre-filter').value = '';
+    document.getElementById('year-filter').value = '';
+    document.getElementById('sort-filter').value = 'recent';
+  }
+
+  // Recherche en temps réel
+  document.getElementById('movie-search').addEventListener('input', function(e) {
+    // Logique de recherche à implémenter
+    console.log('Recherche:', e.target.value);
+  });
+
+  // Filtres
+  document.getElementById('genre-filter').addEventListener('change', function(e) {
+    console.log('Genre:', e.target.value);
+  });
+
+  document.getElementById('year-filter').addEventListener('change', function(e) {
+    console.log('Année:', e.target.value);
+  });
+
+  document.getElementById('sort-filter').addEventListener('change', function(e) {
+    console.log('Tri:', e.target.value);
+  });
+
+  // Pagination
+  function changePage(page) {
+    // Logique de pagination à implémenter
+    console.log('Changement de page:', page);
+    
+    // Mise à jour visuelle de la pagination
+    const pages = document.querySelectorAll('.pagination-page');
+    pages.forEach(p => p.classList.remove('active'));
+    if (page > 0 && page <= pages.length) {
+      pages[page - 1].classList.add('active');
+    }
+  }
+</script>
+{% endblock %}
+

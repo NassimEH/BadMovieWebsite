@@ -553,54 +553,13 @@ header {
 .categories {
   position: relative;
   /* full-bleed section: background covers entire viewport width */
-  padding: 0 0 60px 0;
+  padding: 0 0 0 0;
   /* horizontal padding removed so background spans edge-to-edge */
   margin-top: -1px;
   overflow: hidden;
   color: #ffffff;
-}
-
-.categories::before {
-  /* blurred background reusing the banner image */
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: url('../images/movies/bg-little-mermaid.jpg');
-  background-size: cover;
-  background-position: center;
-  filter: blur(8px) brightness(0.25);
-  transform: scale(1.05);
-  z-index: 1;
-  transition: background-image 0.5s ease;
-}
-
-/* Classes pour changer l'image de fond selon le film sélectionné */
-.categories.bg-little-mermaid::before {
-  background-image: url('../images/movies/bg-little-mermaid.jpg');
-}
-
-.categories.bg-65::before {
-  background-image: url('../images/movies/bg-65.jpeg');
-}
-
-.categories.bg-the-covenant::before {
-  background-image: url('../images/movies/bg-the-covenant.jpeg');
-}
-
-.categories.bg-the-black-demon::before {
-  background-image: url('../images/movies/bg-the-black-demon.jpeg');
-}
-
-.categories.bg-the-tank::before {
-  background-image: url('../images/movies/bg-the-tank.jpeg');
-}
-
-.categories::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  z-index: 2;
+  background: transparent;
+  z-index: 3;
 }
 
 .categories .container {
@@ -612,7 +571,7 @@ header {
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 0;
   /* full-width panel, no rounded edges */
-  padding: 60px 100px 28px 100px;
+  padding: 60px 100px 40px 100px;
   /* align inner content with header left/right padding */
   width: 100%;
   max-width: none;
@@ -743,22 +702,12 @@ header {
 .footer {
   position: relative;
   width: 100%;
-  background: rgba(0, 0, 0, 0.95);
+  background: transparent;
   border-top: none;
   margin-top: -1px;
   padding: 60px 0 30px;
   overflow: hidden;
-}
-
-.footer::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(180deg, rgba(0, 102, 255, 0.05) 0%, rgba(0, 0, 0, 0.95) 100%);
-  z-index: 1;
+  z-index: 3;
 }
 
 .footer-container {
@@ -951,4 +900,898 @@ header {
     height: 36px;
     font-size: 16px;
   }
+}
+
+/* ==================== PAGE TOUS LES FILMS ==================== */
+.movies-page {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: #000000;
+  overflow-x: hidden;
+}
+
+.movies-page::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('../images/movies/bg-little-mermaid.jpg') no-repeat center;
+  background-size: cover;
+  filter: blur(5px) brightness(0.25);
+  z-index: 1;
+  transition: background-image 0.5s ease;
+}
+
+.movies-page::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.7) 100%);
+  z-index: 2;
+}
+
+/* Classes pour changer l'image de fond selon le film sélectionné */
+.movies-page.bg-little-mermaid::before {
+  background-image: url('../images/movies/bg-little-mermaid.jpg');
+}
+
+.movies-page.bg-65::before {
+  background-image: url('../images/movies/bg-65.jpeg');
+}
+
+.movies-page.bg-the-covenant::before {
+  background-image: url('../images/movies/bg-the-covenant.jpeg');
+}
+
+.movies-page.bg-the-black-demon::before {
+  background-image: url('../images/movies/bg-the-black-demon.jpeg');
+}
+
+.movies-page.bg-the-tank::before {
+  background-image: url('../images/movies/bg-the-tank.jpeg');
+}
+
+.movies-hero {
+  position: relative;
+  width: 100%;
+  min-height: 60vh;
+  padding: 150px 100px 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: url('../images/movies/bg-little-mermaid.jpg') no-repeat;
+  background-size: cover;
+  background-position: center top;
+  overflow: hidden;
+  transition: 0.5s;
+  z-index: 3;
+}
+
+.movies-hero::before {
+  position: absolute;
+  content: '';
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+/* Classes pour changer l'image de fond du hero selon le film sélectionné */
+.movies-page.bg-little-mermaid .movies-hero {
+  background-image: url('../images/movies/bg-little-mermaid.jpg');
+}
+
+.movies-page.bg-65 .movies-hero {
+  background-image: url('../images/movies/bg-65.jpeg');
+}
+
+.movies-page.bg-the-covenant .movies-hero {
+  background-image: url('../images/movies/bg-the-covenant.jpeg');
+}
+
+.movies-page.bg-the-black-demon .movies-hero {
+  background-image: url('../images/movies/bg-the-black-demon.jpeg');
+}
+
+.movies-page.bg-the-tank .movies-hero {
+  background-image: url('../images/movies/bg-the-tank.jpeg');
+}
+
+.movies-hero-content {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  max-width: 1200px;
+  text-align: center;
+}
+
+.movies-hero-title {
+  font-size: 3.5em;
+  color: #ffffff;
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
+.movies-hero-subtitle {
+  font-size: 1.2em;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 300;
+  margin-bottom: 40px;
+}
+
+.movies-search-container {
+  margin: 40px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.search-box {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  align-items: center;
+}
+
+.search-box i {
+  position: absolute;
+  right: 20px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.2em;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 15px 55px 15px 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50px;
+  color: #ffffff;
+  font-size: 1em;
+  font-weight: 400;
+  outline: none;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.search-box input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.search-box input:focus {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: var(--primary);
+  box-shadow: 0 0 20px rgba(0, 102, 255, 0.3);
+}
+
+.movies-filters {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-top: 30px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-group label {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9em;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.filter-select {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 14px 45px 14px 20px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 0.95em;
+  font-weight: 400;
+  font-family: 'Poppins', sans-serif;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(15px) saturate(120%);
+  -webkit-backdrop-filter: blur(15px) saturate(120%);
+  min-width: 200px;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='%23ffffff' d='M7 10L2 5h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 18px center;
+  background-size: 14px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.filter-select:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+}
+
+.filter-select:focus {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--primary);
+  box-shadow: 0 0 20px rgba(0, 102, 255, 0.4), 0 4px 15px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+}
+
+.filter-select option {
+  background: #1a1a1a;
+  color: #ffffff;
+  padding: 10px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.filter-select option:hover {
+  background: var(--primary);
+}
+
+.filter-select option:checked {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.filter-reset-btn {
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 0.95em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  width: 100%;
+  min-width: 180px;
+  height: 45px;
+}
+
+.filter-reset-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(0, 102, 255, 0.3);
+}
+
+.filter-reset-btn:active {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+/* ==================== TITRE SECTION PRINCIPALE ==================== */
+.section-main-title {
+  color: #ffffff;
+  font-size: 2.5em;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 50px;
+  text-align: center;
+  position: relative;
+  padding-bottom: 20px;
+}
+
+
+.section-main-title::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 0;
+  width: 100px;
+  height: 4px;
+  background: var(--primary);
+  border-radius: 3px;
+}
+
+/* ==================== SECTION CTA ==================== */
+.cta-section {
+  position: relative;
+  width: 100%;
+  padding: 80px 100px;
+  background: linear-gradient(135deg, rgba(0, 102, 255, 0.15) 0%, rgba(0, 0, 0, 0.95) 100%);
+  overflow: hidden;
+  margin-top: -1px;
+}
+
+.cta-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('../images/movies/bg-little-mermaid.jpg') no-repeat center;
+  background-size: cover;
+  filter: blur(5px) brightness(0.2);
+  z-index: 1;
+}
+
+.cta-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.cta-title {
+  font-size: 2.5em;
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
+.cta-subtitle {
+  font-size: 1.1em;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 300;
+  margin-bottom: 40px;
+  line-height: 1.6;
+}
+
+.cta-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 40px;
+  background: var(--primary);
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 1.1em;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 20px rgba(0, 102, 255, 0.3);
+}
+
+.cta-button:hover {
+  background: #0052d6;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0, 102, 255, 0.5);
+}
+
+.cta-button i {
+  font-size: 1.2em;
+}
+
+/* Responsive pour la page tous les films */
+@media (max-width: 991px) {
+  .movies-hero {
+    padding: 120px 50px 60px;
+    min-height: 50vh;
+  }
+
+  .movies-hero-title {
+    font-size: 2.5em;
+  }
+
+  .movies-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-select,
+  .filter-reset-btn {
+    width: 100%;
+  }
+
+  .cta-section {
+    padding: 60px 50px;
+  }
+
+  .cta-title {
+    font-size: 2em;
+  }
+}
+
+@media (max-width: 600px) {
+  .movies-hero {
+    padding: 100px 20px 40px;
+    min-height: 40vh;
+  }
+
+  .movies-hero-title {
+    font-size: 2em;
+  }
+
+  .movies-hero-subtitle {
+    font-size: 1em;
+  }
+
+  .search-box {
+    max-width: 100%;
+  }
+
+  .section-main-title {
+    font-size: 1.8em;
+  }
+
+  .cta-section {
+    padding: 50px 20px;
+  }
+
+  .cta-title {
+    font-size: 1.8em;
+  }
+
+  .cta-button {
+    padding: 12px 30px;
+    font-size: 1em;
+  }
+}
+
+/* ==================== PAGINATION ==================== */
+.pagination-container {
+  position: relative;
+  width: 100%;
+  padding: 40px 100px;
+  background: transparent;
+  margin-top: -1px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.pagination-btn {
+  padding: 12px 25px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 0.95em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: var(--primary);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(0, 102, 255, 0.4);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-pages {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagination-page {
+  min-width: 45px;
+  height: 45px;
+  padding: 0 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 0.95em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pagination-page:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.pagination-page.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 5px 20px rgba(0, 102, 255, 0.4);
+}
+
+.pagination-ellipsis {
+  color: rgba(255, 255, 255, 0.6);
+  padding: 0 5px;
+  font-weight: 500;
+}
+
+/* Responsive pagination */
+@media (max-width: 991px) {
+  .pagination-container {
+    padding: 30px 50px;
+  }
+
+  .pagination {
+    gap: 10px;
+  }
+
+  .pagination-btn {
+    padding: 10px 20px;
+    font-size: 0.85em;
+  }
+
+  .pagination-page {
+    min-width: 40px;
+    height: 40px;
+    padding: 0 12px;
+    font-size: 0.85em;
+  }
+}
+
+@media (max-width: 600px) {
+  .pagination-container {
+    padding: 30px 20px;
+  }
+
+  .pagination-btn {
+    padding: 8px 15px;
+    font-size: 0.8em;
+    gap: 5px;
+  }
+
+  .pagination-page {
+    min-width: 35px;
+    height: 35px;
+    padding: 0 10px;
+    font-size: 0.8em;
+  }
+
+  .pagination-pages {
+    gap: 5px;
+  }
+}
+
+/* ==================== PAGES AUTHENTIFICATION ==================== */
+.auth-page {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: #000000;
+  overflow: hidden;
+}
+
+.auth-page::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('../images/movies/bg-little-mermaid.jpg') no-repeat center;
+  background-size: cover;
+  filter: blur(5px) brightness(0.25);
+  z-index: 1;
+}
+
+.auth-page::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.7) 100%);
+  z-index: 2;
+}
+
+.auth-hero {
+  position: relative;
+  width: 100%;
+  min-height: 40vh;
+  padding: 150px 100px 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  overflow: hidden;
+  z-index: 3;
+}
+
+.auth-hero-content {
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  max-width: 800px;
+}
+
+.auth-hero-title {
+  font-size: 3.5em;
+  color: #ffffff;
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
+.auth-hero-subtitle {
+  font-size: 1.2em;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 300;
+}
+
+.auth-form-container {
+  position: relative;
+  width: 100%;
+  padding: 60px 100px 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: transparent;
+  margin-top: -1px;
+  overflow: hidden;
+  z-index: 3;
+}
+
+.auth-card {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  max-width: 500px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px) saturate(120%);
+  -webkit-backdrop-filter: blur(20px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 50px 40px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.auth-card-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.auth-card-title {
+  font-size: 2em;
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.auth-card-subtitle {
+  font-size: 1em;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 300;
+}
+
+.auth-form {
+  margin-bottom: 30px;
+}
+
+.form-group {
+  margin-bottom: 25px;
+}
+
+.form-group label {
+  display: block;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9em;
+  font-weight: 500;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+
+.input-wrapper input {
+  width: 100%;
+  padding: 15px 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 1em;
+  font-weight: 400;
+  outline: none;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  font-family: 'Poppins', sans-serif;
+}
+
+.input-wrapper input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.input-wrapper input:focus {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: var(--primary);
+  box-shadow: 0 0 20px rgba(0, 102, 255, 0.3);
+}
+
+
+.auth-submit-btn {
+  width: 100%;
+  padding: 15px 30px;
+  background: var(--primary);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1em;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+  box-shadow: 0 5px 20px rgba(0, 102, 255, 0.3);
+}
+
+.auth-submit-btn:hover {
+  background: #0052d6;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 102, 255, 0.5);
+}
+
+.auth-submit-btn:active {
+  transform: translateY(0);
+}
+
+.auth-links {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.auth-links p {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.95em;
+  margin-bottom: 15px;
+}
+
+.auth-links a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.auth-links a:hover {
+  color: #0052d6;
+  text-decoration: underline;
+}
+
+.auth-back-link {
+  display: inline-block;
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-size: 0.9em;
+  margin-top: 10px;
+}
+
+.auth-back-link:hover {
+  color: var(--primary) !important;
+  text-decoration: none !important;
+}
+
+/* Responsive pour les pages auth */
+@media (max-width: 991px) {
+  .auth-hero {
+    padding: 120px 50px 40px;
+    min-height: 35vh;
+  }
+
+  .auth-hero-title {
+    font-size: 2.5em;
+  }
+
+  .auth-form-container {
+    padding: 40px 50px 60px;
+  }
+
+  .auth-card {
+    padding: 40px 30px;
+  }
+
+  .movies-categories-intro {
+    padding: 50px 50px;
+  }
+
+}
+
+@media (max-width: 600px) {
+  .auth-hero {
+    padding: 100px 20px 30px;
+    min-height: 30vh;
+  }
+
+  .auth-hero-title {
+    font-size: 2em;
+  }
+
+  .auth-hero-subtitle {
+    font-size: 1em;
+  }
+
+  .auth-form-container {
+    padding: 30px 20px 50px;
+  }
+
+  .auth-card {
+    padding: 30px 20px;
+    border-radius: 15px;
+  }
+
+  .auth-card-title {
+    font-size: 1.5em;
+  }
+
+  .input-wrapper input {
+    padding: 12px 15px 12px 50px;
+    font-size: 0.95em;
+  }
+
+  .auth-submit-btn {
+    padding: 12px 25px;
+    font-size: 1em;
+  }
+
+  .movies-categories-intro {
+    padding: 40px 20px;
+  }
+
 }

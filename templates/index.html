@@ -7,9 +7,9 @@
     <li>
       <a href="{{ url_for('index') }}" title="Accueil"><i class="fa fa-home" aria-hidden="true"></i> </a>
     </li>
-    <li><a href="{{ url_for('movies.list_movies') }}">Tous les films</a></li>
+    <li><a href="{{ url_for('movies.list_movies') }}">Tous nos films</a></li>
     <li><a href="#">Ma Liste</a></li>
-    <li><a href="#">Tendances</a></li>
+    <li><a href="#">Pour vous</a></li>
   </ul>
   <div class="header-right">
     <!-- Auth buttons (Connexion / Inscription) placed to the right of the search -->
@@ -162,6 +162,7 @@
 <!-- Sections de catégories (titres seulement) -->
 <section class="categories bg-little-mermaid">
   <div class="container">
+    <h1 class="section-main-title">Nos meilleurs films</h1>
     <div class="category">
       <h2>Films d'action</h2>
       <div class="category-content-placeholder"></div>
@@ -183,6 +184,18 @@
     </div>
   </div>
 </section>
+
+<!-- Section CTA avant le footer -->
+<section class="cta-section">
+  <div class="cta-content">
+    <h2 class="cta-title">Envie d'en découvrir davantage ?</h2>
+    <p class="cta-subtitle">Explorez notre collection complète de films avec recherche et filtres avancés</p>
+    <a href="{{ url_for('movies.list_movies') }}" class="cta-button">
+      <i class="fa fa-film" aria-hidden="true"></i> Voir tous les films
+    </a>
+  </div>
+</section>
+
 <div class="trailer">
   <video src="{{ url_for('static', filename='assets/star.mp4') }}" muted controls="true" autoplay="true"></video>
   <img class="close" src="{{ url_for('static', filename='images/close.png') }}" alt="fermer" onClick="toggleVideo()" />
