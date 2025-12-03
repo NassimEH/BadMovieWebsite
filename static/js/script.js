@@ -207,11 +207,29 @@ function loadMoviesByCategory() {
   fetch('/movies/api/by-category')
     .then((response) => {
       if (!response.ok) {
-        throw new Error("Erreur lors du chargement des films");
+        // Essayer de récupérer le message d'erreur du serveur
+        return response.json().then((errorData) => {
+          throw new Error(errorData.error || `Erreur ${response.status}: ${response.statusText}`);
+        }).catch(() => {
+          throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+        });
       }
       return response.json();
     })
     .then((data) => {
+      // Vérifier si la réponse contient une erreur
+      if (data.error) {
+        console.error('Erreur serveur:', data.error);
+        // Afficher un message d'erreur dans toutes les sections
+        categorySections.forEach((section) => {
+          const placeholder = section.querySelector('.category-content-placeholder');
+          if (placeholder) {
+            placeholder.innerHTML = `<p class="no-movies" style="color: #ff6b6b;">Erreur: ${data.error}</p>`;
+          }
+        });
+        return;
+      }
+
       categorySections.forEach((section) => {
         const headingEl = section.querySelector('h2');
         const placeholder = section.querySelector('.category-content-placeholder');
@@ -234,7 +252,14 @@ function loadMoviesByCategory() {
       attachCategoryCarouselEvents();
     })
     .catch((error) => {
-      console.error(error);
+      console.error('Erreur lors du chargement des films:', error);
+      // Afficher un message d'erreur dans toutes les sections
+      categorySections.forEach((section) => {
+        const placeholder = section.querySelector('.category-content-placeholder');
+        if (placeholder) {
+          placeholder.innerHTML = `<p class="no-movies" style="color: #ff6b6b;">Erreur: ${error.message || 'Impossible de charger les films'}</p>`;
+        }
+      });
     });
 }
 
