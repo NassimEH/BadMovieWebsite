@@ -1,7 +1,7 @@
 import os
 
 import requests
-from flask import Blueprint, render_template, jsonify, current_app
+from flask import Blueprint, render_template, jsonify, current_app, abort
 
 movie_bp = Blueprint('movies', __name__, url_prefix='/movies')
 
@@ -12,6 +12,11 @@ def list_movies():
     return render_template('movies_list.html')
 
 
+def _get_tmdb_api_key():
+    """Récupère la clé TMDB depuis l'env ou la config Flask."""
+    return os.getenv("API_key") or current_app.config.get("TMDB_API_KEY")
+
+
 @movie_bp.route('/api/by-category')
 def api_movies_by_category():
     """Retourne les films groupés par catégorie au format JSON depuis TMDB.
@@ -20,10 +25,7 @@ def api_movies_by_category():
     dynamiquement les sections de catégories sur la page d'accueil
     et la page listant tous les films.
     """
-    # On utilise les noms réels définis dans le .env :
-    # API_key = <clé API TMDB v3>
-    # JetonTMDB = <token de lecture v4> (ici non utilisé car l'API discover accepte la clé v3)
-    api_key = os.getenv("API_key") or current_app.config.get("TMDB_API_KEY")
+    api_key = _get_tmdb_api_key()
     if not api_key:
         # En cas de mauvaise configuration, on retourne une structure vide
         return jsonify({"error": "TMDB_API_KEY manquante dans l'environnement"}), 500
@@ -87,3 +89,53 @@ def api_movies_by_category():
             )
 
     return jsonify(grouped)
+
+
+@movie_bp.route('/<int:tmdb_id>')
+def movie_detail(tmdb_id: int):
+    """Page de détail pour un film issu de TMDB."""
+    api_key = _get_tmdb_api_key()
+    if not api_key:
+        abort(500, description="TMDB_API_KEY manquante dans l'environnement")
+
+    base_url = "https://api.themoviedb.org/3/movie"
+
+    try:
+        # Détails du film
+        detail_resp = requests.get(
+            f"{base_url}/{tmdb_id}",
+            params={
+                "api_key": api_key,
+                "language": "fr-FR",
+                "append_to_response": "credits,videos",
+            },
+            timeout=5,
+        )
+        detail_resp.raise_for_status()
+        movie = detail_resp.json()
+    except requests.RequestException:
+        abort(404)
+
+    # Construction des URLs d'images
+    poster_path = movie.get("poster_path")
+    backdrop_path = movie.get("backdrop_path")
+
+    poster_url = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else None
+    backdrop_url = f"https://image.tmdb.org/t/p/original{backdrop_path}" if backdrop_path else None
+
+    # Casting principal (quelques acteurs)
+    credits = movie.get("credits", {})
+    cast = credits.get("cast", []) if isinstance(credits, dict) else []
+    main_cast = [
+        member.get("name")
+        for member in cast[:6]
+        if member.get("name")
+    ]
+
+    return render_template(
+        "movie_detail.html",
+        movie=movie,
+        poster_url=poster_url,
+        backdrop_url=backdrop_url,
+        main_cast=main_cast,
+    )

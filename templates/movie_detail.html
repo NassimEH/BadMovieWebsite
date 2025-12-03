@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}BadMovie | {{ movie.title }}{% endblock %}
+
+{% block content %}
+<div class="movie-detail-page">
+  <div class="movie-detail-hero" {% if backdrop_url %}style="background-image: url('{{ backdrop_url }}');"{% endif %}>
+    <header>
+      <a href="{{ url_for('index') }}" class="logo">BadMovie<span class="logo-dot">.</span></a>
+      <ul class="nav">
+        <li><a href="{{ url_for('index') }}" title="Accueil"><i class="fa fa-home" aria-hidden="true"></i></a></li>
+        <li><a href="{{ url_for('movies.list_movies') }}">Tous nos films</a></li>
+        <li><a href="#">Ma Liste</a></li>
+        <li><a href="#">Pour vous</a></li>
+      </ul>
+      <div class="header-right">
+        <div class="auth-buttons">
+          {% if current_user.is_authenticated %}
+          <a href="{{ url_for('auth.logout') }}" class="auth-btn">Déconnexion</a>
+          <span class="user-name">{{ current_user.nom }}</span>
+          {% else %}
+          <a href="{{ url_for('auth.login') }}" class="auth-btn">Connexion</a>
+          <a href="{{ url_for('auth.sign_up') }}" class="auth-btn auth-btn-outline">Inscription</a>
+          {% endif %}
+        </div>
+      </div>
+    </header>
+
+    <div class="movie-detail-overlay"></div>
+
+    <div class="movie-detail-content">
+      <div class="movie-detail-card">
+        <div class="movie-detail-poster">
+          {% if poster_url %}
+          <img src="{{ poster_url }}" alt="Affiche de {{ movie.title }}" />
+          {% else %}
+          <div class="movie-detail-poster-placeholder">
+            <span>Aucune affiche</span>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="movie-detail-info">
+          <h1 class="movie-detail-title">{{ movie.title }}</h1>
+
+          <p class="movie-detail-meta">
+            {% if movie.release_date %}
+            <span>{{ movie.release_date[:4] }}</span>
+            {% endif %}
+            {% if movie.runtime %}
+            <span>{{ movie.runtime }} min</span>
+            {% endif %}
+            {% if movie.genres %}
+            <span>
+              {{ movie.genres | map(attribute='name') | join(', ') }}
+            </span>
+            {% endif %}
+          </p>
+
+          {% if movie.vote_average %}
+          <div class="movie-detail-rating">
+            <span class="movie-detail-rating-score">{{ '%.1f'|format(movie.vote_average) }}</span>
+            <span class="movie-detail-rating-label">/ 10 sur TMDB</span>
+          </div>
+          {% endif %}
+
+          {% if movie.overview %}
+          <p class="movie-detail-overview">{{ movie.overview }}</p>
+          {% endif %}
+
+          {% if main_cast %}
+          <div class="movie-detail-cast">
+            <h3>Avec</h3>
+            <p>{{ main_cast | join(', ') }}</p>
+          </div>
+          {% endif %}
+
+          <div class="movie-detail-actions">
+            <a href="#" class="primary-btn"><i class="fa fa-play" aria-hidden="true"></i> Regarder</a>
+            <a href="#" class="secondary-btn"><i class="fa fa-plus" aria-hidden="true"></i> Ma Liste</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{
+  "cells": [],
+  "metadata": {
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 2
+}

@@ -109,19 +109,22 @@ function buildMovieCardHtml(movie) {
 
   const yearText = movie.year ? movie.year : "";
   const durationText = movie.duration ? ` • ${movie.duration}` : "";
+  const detailUrl = movie.id ? `/movies/${movie.id}` : "#";
 
   return `
-    <div class="movie-card">
-      <div class="movie-card-poster">
-        <img src="${imgSrc}" alt="${movie.title || "Affiche film"}">
+    <a class="movie-card-link" href="${detailUrl}">
+      <div class="movie-card">
+        <div class="movie-card-poster">
+          <img src="${imgSrc}" alt="${movie.title || "Affiche film"}">
+        </div>
+        <div class="movie-card-info">
+          <h3 class="movie-card-title">${movie.title || "Titre indisponible"}</h3>
+          <p class="movie-card-meta">
+            ${yearText}${durationText}
+          </p>
+        </div>
       </div>
-      <div class="movie-card-info">
-        <h3 class="movie-card-title">${movie.title || "Titre indisponible"}</h3>
-        <p class="movie-card-meta">
-          ${yearText}${durationText}
-        </p>
-      </div>
-    </div>
+    </a>
   `;
 }
 
