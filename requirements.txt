@@ -7,3 +7,4 @@ flask_sqlalchemy>=3.0
 python-dotenv>=1.0
 Jinja2>=3.0
 routes>=0.0.0
+requests>=2.0
