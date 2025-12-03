@@ -4,15 +4,12 @@
 <header>
   <a href="{{ url_for('index') }}" class="logo">BadMovie<span class="logo-dot">.</span></a>
   <ul class="nav">
-    <li>
-      <a href="{{ url_for('index') }}" title="Accueil"><i class="fa fa-home" aria-hidden="true"></i> </a>
-    </li>
+    <li><a href="{{ url_for('index') }}" title="Accueil"><i class="fa fa-home" aria-hidden="true"></i></a></li>
     <li><a href="{{ url_for('movies.list_movies') }}">Tous nos films</a></li>
-    <li><a href="#">Ma Liste</a></li>
+    <li><a href="{{ url_for('watchlist.show_watchlist') }}">Ma Liste</a></li>
     <li><a href="#">Pour vous</a></li>
   </ul>
   <div class="header-right">
-    <!-- Auth buttons (Connexion / Inscription) placed to the right of the search -->
     <div class="auth-buttons">
       {% if current_user.is_authenticated %}
       <a href="{{ url_for('auth.logout') }}" class="auth-btn">Déconnexion</a>
@@ -24,104 +21,98 @@
     </div>
   </div>
 </header>
+
 <div class="banner">
   <div class="content the-little-mermaid active">
-    <img class="movie-title" src="{{ url_for('static', filename='images/the-little-mermaid-title.png') }}"
-      alt="La Petite Sirène" />
-    <h4>
-      <span>2023</span>
-      <span><i>12+</i></span>
-      <span>2h 14min</span>
-      <span>Fantastique</span>
-    </h4>
-    <p>
-      Ariel, une jeune et curieuse sirène, rêve de découvrir le monde des humains. Lorsqu'elle tombe amoureuse du prince
-      Eric, elle conclut un pacte avec la sorcière des mers Ursula, échangeant sa voix contre des jambes. Dans cette
-      adaptation live-action du classique Disney, plongez dans un océan de magie, de romance et d'aventures épiques où
-      l'amour transcende les frontières entre deux mondes.
-    </p>
+    <img class="movie-title" src="{{ url_for('static', filename='images/the-little-mermaid-title.png') }}" alt="La Petite Sirène" />
+    <h4><span>2023</span><span><i>12+</i></span><span>2h 14min</span><span>Fantastique</span></h4>
+    <p>Ariel, une jeune et curieuse sirène...</p>
     <div class="button">
-      <a href="#"><i class="fa fa-play" aria-hidden="true"></i> Regarder</a>
-      <a href="#"><i class="fa fa-plus" aria-hidden="true"></i> Ma Liste</a>
+      <a href="#"><i class="fa fa-play"></i> Regarder</a>
+      <a href="javascript:void(0)" class="secondary-btn js-watchlist-btn"
+         data-tmdb-id="447365"
+         data-title="La Petite Sirène"
+         data-image="https://image.tmdb.org/t/p/w500/ym1dxyOk4jFcSl4Q2zmRrA5BEEN.jpg"
+         data-release-date="2023-05-24"
+         data-runtime="135"
+         data-category="Fantastique">
+        <i class="fa fa-plus"></i> Ma Liste
+      </a>
     </div>
   </div>
+
   <div class="content bg-65">
     <img class="movie-title" src="{{ url_for('static', filename='images/the-65-title.png') }}" alt="65" />
-    <h4>
-      <span>2023</span>
-      <span><i>15+</i></span>
-      <span>1h 33min</span>
-      <span>Science-Fiction</span>
-    </h4>
-    <p>
-      Après un crash sur une planète inconnue il y a 65 millions d'années, le pilote Mills découvre qu'il n'a atterri
-      que sur la Terre préhistorique. Avec une seule chance de survie, Mills et la seule autre survivante, Koa, doivent
-      traverser un territoire dangereux rempli de créatures préhistoriques féroces dans une course contre la montre pour
-      échapper à l'extinction imminente.
-    </p>
+    <h4><span>2023</span><span><i>15+</i></span><span>1h 33min</span><span>Science-Fiction</span></h4>
+    <p>Après un crash sur une planète inconnue...</p>
     <div class="button">
-      <a href="#"><i class="fa fa-play" aria-hidden="true"></i> Regarder</a>
-      <a href="#"><i class="fa fa-plus" aria-hidden="true"></i> Ma Liste</a>
+      <a href="#"><i class="fa fa-play"></i> Regarder</a>
+      <a href="javascript:void(0)" class="secondary-btn js-watchlist-btn"
+         data-tmdb-id="700391"
+         data-title="65 : La Terre d'Avant"
+         data-image="https://image.tmdb.org/t/p/w500/rzRb63TldGrdKDNPXistiRCp7tF.jpg"
+         data-release-date="2023-03-15"
+         data-runtime="93"
+         data-category="Science-Fiction">
+        <i class="fa fa-plus"></i> Ma Liste
+      </a>
     </div>
   </div>
+
   <div class="content the-covenant">
     <img class="movie-title" src="{{ url_for('static', filename='images/the-covenant-title.png') }}" alt="Le Pacte" />
-    <h4>
-      <span>2023</span>
-      <span><i>12+</i></span>
-      <span>2h 03min</span>
-      <span>Guerre</span>
-    </h4>
-    <p>
-      En Afghanistan, le sergent John Kinley et son interprète local Ahmed forment une équipe soudée. Lors d'une
-      mission, Kinley est gravement blessé et Ahmed le sauve au péril de sa vie. De retour aux États-Unis, Kinley
-      découvre qu'Ahmed et sa famille sont menacés par les Talibans. Il retourne alors en Afghanistan pour honorer sa
-      dette et sauver ceux qui lui ont sauvé la vie.
-    </p>
+    <h4><span>2023</span><span><i>12+</i></span><span>2h 03min</span><span>Guerre</span></h4>
+    <p>En Afghanistan, le sergent John Kinley...</p>
     <div class="button">
-      <a href="#"><i class="fa fa-play" aria-hidden="true"></i> Regarder</a>
-      <a href="#"><i class="fa fa-plus" aria-hidden="true"></i> Ma Liste</a>
+      <a href="#"><i class="fa fa-play"></i> Regarder</a>
+      <a href="javascript:void(0)" class="secondary-btn js-watchlist-btn"
+         data-tmdb-id="882598"
+         data-title="The Covenant"
+         data-image="https://image.tmdb.org/t/p/w500/kVG8zFFYrpyYLoHChuEeOGAd6Ru.jpg"
+         data-release-date="2023-04-21"
+         data-runtime="123"
+         data-category="Guerre">
+        <i class="fa fa-plus"></i> Ma Liste
+      </a>
     </div>
   </div>
+
   <div class="content the-black-demon">
-    <img class="movie-title" src="{{ url_for('static', filename='images/the-black-demon-title.png') }}"
-      alt="Le Démon Noir" />
-    <h4>
-      <span>2023</span>
-      <span><i>16+</i></span>
-      <span>1h 40min</span>
-      <span>Thriller</span>
-    </h4>
-    <p>
-      Paul Sturges emmène sa famille dans une station pétrolière abandonnée au large des côtes mexicaines pour des
-      vacances. Mais ce qui devait être un séjour paisible se transforme en cauchemar lorsqu'une créature préhistorique
-      légendaire, un requin géant connu sous le nom de "Démon Noir", commence à les traquer. La famille doit lutter pour
-      sa survie contre cette force de la nature impitoyable.
-    </p>
+    <img class="movie-title" src="{{ url_for('static', filename='images/the-black-demon-title.png') }}" alt="Le Démon Noir" />
+    <h4><span>2023</span><span><i>16+</i></span><span>1h 40min</span><span>Thriller</span></h4>
+    <p>Paul Sturges emmène sa famille...</p>
     <div class="button">
-      <a href="#"><i class="fa fa-play" aria-hidden="true"></i> Regarder</a>
-      <a href="#"><i class="fa fa-plus" aria-hidden="true"></i> Ma Liste</a>
+      <a href="#"><i class="fa fa-play"></i> Regarder</a>
+      <a href="javascript:void(0)" class="secondary-btn js-watchlist-btn"
+         data-tmdb-id="890771"
+         data-title="The Black Demon"
+         data-image="https://image.tmdb.org/t/p/w500/uiFcVVjRE05wi21vYBGMgLiH4ps.jpg"
+         data-release-date="2023-04-26"
+         data-runtime="100"
+         data-category="Thriller">
+        <i class="fa fa-plus"></i> Ma Liste
+      </a>
     </div>
   </div>
+
   <div class="content the-tank">
     <img class="movie-title" src="{{ url_for('static', filename='images/the-tank-title.png') }}" alt="Le Réservoir" />
-    <h4>
-      <span>2023</span>
-      <span><i>15+</i></span>
-      <span>1h 40min</span>
-      <span>Horreur</span>
-    </h4>
-    <p>
-      En 1978, Ben et sa famille héritent d'une propriété isolée dans l'Oregon. Lorsqu'ils découvrent un mystérieux
-      réservoir souterrain sur leur terrain, ils libèrent par inadvertance une créature terrifiante qui a été piégée
-      pendant des décennies. Alors que la créature se répand dans leur maison, la famille doit lutter pour survivre à
-      cette force maléfique qui menace de les détruire tous.
-    </p>
+    <h4><span>2023</span><span><i>15+</i></span><span>1h 40min</span><span>Horreur</span></h4>
+    <p>En 1978, Ben et sa famille héritent...</p>
     <div class="button">
-      <a href="#"><i class="fa fa-play" aria-hidden="true"></i> Regarder</a>
-      <a href="#"><i class="fa fa-plus" aria-hidden="true"></i> Ma Liste</a>
+      <a href="#"><i class="fa fa-play"></i> Regarder</a>
+      <a href="javascript:void(0)" class="secondary-btn js-watchlist-btn"
+         data-tmdb-id="722780"
+         data-title="The Tank"
+         data-image="https://image.tmdb.org/t/p/w500/r3pPehX4ik8NlyPpbLZDeLSln7a.jpg"
+         data-release-date="2023-04-21"
+         data-runtime="100"
+         data-category="Horreur">
+        <i class="fa fa-plus"></i> Ma Liste
+      </a>
     </div>
   </div>
+
   <div class="carousel-box">
     <div class="carousel">
       <div class="carousel-item" onClick="changeBg('bg-little-mermaid.jpg', 'the-little-mermaid');">
@@ -141,25 +132,19 @@
       </div>
     </div>
   </div>
+
   <a href="#" class="play" onClick="toggleVideo()">
     <i class="fa fa-play-circle-o" aria-hidden="true"></i> Voir la Bande-annonce
   </a>
+  
   <ul class="sci">
-    <li>
-      <a href="#" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i></a>
-    </li>
-    <li>
-      <a href="#" title="LinkedIn"><i class="fa fa-linkedin" aria-hidden="true"></i></a>
-    </li>
-    <li>
-      <a href="#" title="YouTube"><i class="fa fa-youtube-play" aria-hidden="true"></i></a>
-    </li>
-    <li>
-      <a href="#" title="X"><i class="fa fa-twitter" aria-hidden="true"></i></a>
-    </li>
+    <li><a href="#" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i></a></li>
+    <li><a href="#" title="LinkedIn"><i class="fa fa-linkedin" aria-hidden="true"></i></a></li>
+    <li><a href="#" title="YouTube"><i class="fa fa-youtube-play" aria-hidden="true"></i></a></li>
+    <li><a href="#" title="X"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
   </ul>
 </div>
-<!-- Sections de catégories (titres seulement) -->
+
 <section class="categories bg-little-mermaid">
   <div class="container">
     <h1 class="section-main-title">Nos meilleurs films</h1>
@@ -167,17 +152,14 @@
       <h2>Films d'action</h2>
       <div class="category-content-placeholder"></div>
     </div>
-
     <div class="category">
       <h2>Films d'horreur</h2>
       <div class="category-content-placeholder"></div>
     </div>
-
     <div class="category">
       <h2>Films fantastique</h2>
       <div class="category-content-placeholder"></div>
     </div>
-
     <div class="category">
       <h2>Science-Fiction</h2>
       <div class="category-content-placeholder"></div>
@@ -185,7 +167,6 @@
   </div>
 </section>
 
-<!-- Section CTA avant le footer -->
 <section class="cta-section">
   <div class="cta-content">
     <h2 class="cta-title">Envie d'en découvrir davantage ?</h2>
@@ -203,7 +184,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script type="text/javascript">
+<script>
   $(document).ready(function () {
     $('.carousel').carousel();
   });

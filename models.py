@@ -9,7 +9,7 @@ class User(db.Model, UserMixin):
     ID_user = db.Column(db.Integer, primary_key=True)
     nom = db.Column(db.String(50), nullable=False)
     password = db.Column(db.String(128), nullable=False)
-    mail = db.Column(db.String(50), unique=True, nullable=False)
+    mail = db.Column(db.String(256), unique=True, nullable=False)
     commentaires = db.relationship('Commentaire', backref='user', lazy=True)
 
     def get_id(self):
@@ -36,4 +36,4 @@ class Commentaire(db.Model):
     ID_film = db.Column(db.Integer, db.ForeignKey('movies.ID_film'), primary_key=True)
     watched = db.Column(db.Boolean, default=False)
     score_user = db.Column(db.Integer)
-    avis_user = db.Column(db.String(255))
+    avis_user = db.Column(db.Text)

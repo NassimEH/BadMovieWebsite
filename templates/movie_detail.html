@@ -9,7 +9,7 @@
     <ul class="nav">
       <li><a href="{{ url_for('index') }}" title="Accueil"><i class="fa fa-home" aria-hidden="true"></i></a></li>
       <li><a href="{{ url_for('movies.list_movies') }}">Tous nos films</a></li>
-      <li><a href="#">Ma Liste</a></li>
+      <li><a href="{{ url_for('watchlist.show_watchlist') }}">Ma Liste</a></li>
       <li><a href="#">Pour vous</a></li>
     </ul>
     <div class="header-right">
@@ -24,6 +24,7 @@
       </div>
     </div>
   </header>
+  
   <div class="movie-detail-hero" {% if backdrop_url %}style="background-image: url('{{ backdrop_url }}');"{% endif %}>
     <div class="movie-detail-overlay"></div>
 
@@ -42,33 +43,43 @@
         <div class="movie-detail-user-actions">
           {% if not current_user.is_authenticated %}
           <div class="login-prompt">
-            <p><a href="{{ url_for('auth.login') }}">Connectez-vous</a> pour marquer ce film comme vu et lui attribuer une note</p>
+            <p><a href="{{ url_for('auth.login') }}">Connectez-vous</a> pour gérer votre liste</p>
           </div>
           {% endif %}
 
           <div class="movie-watched-toggle">
-            <button type="button" id="watched-btn" class="watched-btn" data-watched="false" {% if not current_user.is_authenticated %}disabled title="Connectez-vous pour utiliser cette fonctionnalité"{% endif %}>
-              <i class="fa fa-eye" aria-hidden="true"></i>
-              <span class="watched-text">Marquer comme vu</span>
+            <button type="button" id="watched-btn" 
+                    class="watched-btn {% if interaction and interaction.watched %}watched{% endif %}" 
+                    data-watched="{{ 'true' if interaction and interaction.watched else 'false' }}"
+                    {% if not current_user.is_authenticated %}disabled{% endif %}>
+              <i class="fa {% if interaction and interaction.watched %}fa-check-circle{% else %}fa-eye{% endif %}" aria-hidden="true"></i>
+              <span class="watched-text">
+                {% if interaction and interaction.watched %}Vu{% else %}Marquer comme vu{% endif %}
+              </span>
             </button>
           </div>
 
           <div class="movie-rating-section">
             <h3 class="movie-detail-section-title">Ma note</h3>
-            <div class="star-rating" data-movie-id="{{ movie.id }}" {% if not current_user.is_authenticated %}data-disabled="true"{% endif %}>
+            
+            <div class="star-rating" 
+                 data-current-score="{{ interaction.score_user if interaction and interaction.score_user else 0 }}"
+                 {% if not current_user.is_authenticated %}data-disabled="true"{% endif %}>
+              
               {% for i in range(1, 6) %}
               <div class="star-container" data-rating="{{ i }}">
-                <span class="star star-left" data-rating="{{ i - 0.5 }}" aria-label="Noter {{ i - 0.5 }}/5" {% if not current_user.is_authenticated %}title="Connectez-vous pour noter"{% endif %}>
+                <span class="star star-left" data-rating="{{ i - 0.5 }}" aria-label="Noter {{ i - 0.5 }}/5">
                   <i class="fa fa-star-half-o" aria-hidden="true"></i>
                 </span>
-                <span class="star star-right" data-rating="{{ i }}" aria-label="Noter {{ i }}/5" {% if not current_user.is_authenticated %}title="Connectez-vous pour noter"{% endif %}>
+                <span class="star star-right" data-rating="{{ i }}" aria-label="Noter {{ i }}/5">
                   <i class="fa fa-star-o" aria-hidden="true"></i>
                 </span>
               </div>
               {% endfor %}
             </div>
+
             <div class="rating-display">
-              <span class="rating-value">0</span>
+              <span class="rating-value">{{ interaction.score_user if interaction and interaction.score_user else 0 }}</span>
               <span class="rating-max">/ 5</span>
             </div>
             <div class="rating-label"></div>
@@ -78,19 +89,10 @@
 
       <div class="movie-detail-info">
         <h1 class="movie-detail-title">{{ movie.title }}</h1>
-
         <div class="movie-detail-meta">
-          {% if movie.release_date %}
-          <span class="meta-item">{{ movie.release_date[:4] }}</span>
-          {% endif %}
-          {% if movie.runtime %}
-          <span class="meta-item">{{ movie.runtime }} min</span>
-          {% endif %}
-          {% if movie.genres %}
-          <span class="meta-item">
-            {{ movie.genres | map(attribute='name') | join(', ') }}
-          </span>
-          {% endif %}
+          {% if movie.release_date %}<span class="meta-item">{{ movie.release_date[:4] }}</span>{% endif %}
+          {% if movie.runtime %}<span class="meta-item">{{ movie.runtime }} min</span>{% endif %}
+          {% if movie.genres %}<span class="meta-item">{{ movie.genres | map(attribute='name') | join(', ') }}</span>{% endif %}
         </div>
 
         {% if movie.vote_average %}
@@ -102,7 +104,32 @@
 
         <div class="movie-detail-actions">
           <a href="#" class="primary-btn"><i class="fa fa-play" aria-hidden="true"></i> Regarder</a>
-          <a href="#" class="secondary-btn"><i class="fa fa-plus" aria-hidden="true"></i> Ma Liste</a>
+          
+          {% if interaction %}
+            <a href="javascript:void(0)" 
+               class="secondary-btn js-watchlist-btn"
+               style="opacity: 0.7; pointer-events: none;"
+               data-tmdb-id="{{ movie.id }}"
+               data-title="{{ movie.title }}"
+               data-image="{{ poster_url }}"
+               data-release-date="{{ movie.release_date }}"
+               data-runtime="{{ movie.runtime }}"
+               data-category="{{ movie.genres[0]['name'] if movie.genres else 'Autre' }}">
+               <i class="fa fa-check" aria-hidden="true"></i> Dans ma liste
+            </a>
+          
+          {% else %}
+            <a href="javascript:void(0)" 
+               class="secondary-btn js-watchlist-btn"
+               data-tmdb-id="{{ movie.id }}"
+               data-title="{{ movie.title }}"
+               data-image="{{ poster_url }}"
+               data-release-date="{{ movie.release_date }}"
+               data-runtime="{{ movie.runtime }}"
+               data-category="{{ movie.genres[0]['name'] if movie.genres else 'Autre' }}">
+               <i class="fa fa-plus" aria-hidden="true"></i> Ma Liste
+            </a>
+          {% endif %}
         </div>
 
         {% if movie.overview %}
@@ -122,129 +149,4 @@
     </div>
   </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Gestion du bouton "Vu/Non vu"
-  const watchedBtn = document.getElementById('watched-btn');
-  if (watchedBtn && !watchedBtn.disabled) {
-    watchedBtn.addEventListener('click', function() {
-      const isWatched = this.dataset.watched === 'true';
-      const newState = !isWatched;
-      
-      this.dataset.watched = newState.toString();
-      
-      if (newState) {
-        this.classList.add('watched');
-        this.querySelector('.watched-text').textContent = 'Vu';
-        this.querySelector('i').className = 'fa fa-check-circle';
-      } else {
-        this.classList.remove('watched');
-        this.querySelector('.watched-text').textContent = 'Marquer comme vu';
-        this.querySelector('i').className = 'fa fa-eye';
-      }
-      
-      // TODO: Envoyer la requête au serveur pour sauvegarder l'état
-      // fetch('/movies/{{ movie.id }}/watched', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ watched: newState })
-      // });
-    });
-  }
-
-  // Gestion du système de notation par étoiles (5 étoiles avec demi-étoiles)
-  const starRating = document.querySelector('.star-rating');
-  const ratingValue = document.querySelector('.rating-value');
-  const ratingLabel = document.querySelector('.rating-label');
-  const isDisabled = starRating && starRating.dataset.disabled === 'true';
-  let currentRating = 0;
-  let hoveredRating = 0;
-
-  // Labels pour chaque note
-  const ratingLabels = {
-    0: '',
-    0.5: 'Horrible',
-    1: 'Très mauvais',
-    1.5: 'Mauvais',
-    2: 'Médiocre',
-    2.5: 'Passable',
-    3: 'Correct',
-    3.5: 'Bon',
-    4: 'Très bon',
-    4.5: 'Excellent',
-    5: 'Chef d\'œuvre'
-  };
-
-  if (starRating && !isDisabled) {
-    const starContainers = starRating.querySelectorAll('.star-container');
-    const stars = starRating.querySelectorAll('.star');
-    
-    // Gestion du survol
-    stars.forEach((star) => {
-      star.addEventListener('mouseenter', function() {
-        hoveredRating = parseFloat(this.dataset.rating);
-        updateStarDisplay(starContainers, stars, hoveredRating, true);
-        if (ratingLabel) {
-          ratingLabel.textContent = ratingLabels[hoveredRating] || '';
-        }
-      });
-    });
-
-    starRating.addEventListener('mouseleave', function() {
-      hoveredRating = 0;
-      updateStarDisplay(starContainers, stars, currentRating, false);
-      if (ratingLabel) {
-        ratingLabel.textContent = currentRating > 0 ? ratingLabels[currentRating] || '' : '';
-      }
-    });
-
-    // Gestion du clic
-    stars.forEach((star) => {
-      star.addEventListener('click', function() {
-        currentRating = parseFloat(this.dataset.rating);
-        updateStarDisplay(starContainers, stars, currentRating, false);
-        if (ratingValue) {
-          ratingValue.textContent = currentRating;
-        }
-        if (ratingLabel) {
-          ratingLabel.textContent = ratingLabels[currentRating] || '';
-        }
-        
-        // TODO: Envoyer la requête au serveur pour sauvegarder la note
-        // fetch('/movies/{{ movie.id }}/rating', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify({ rating: currentRating })
-        // });
-      });
-    });
-
-    function updateStarDisplay(containers, stars, rating, isHover) {
-      // Réinitialiser toutes les étoiles
-      stars.forEach((star) => {
-        star.classList.remove('active', 'hovered');
-      });
-
-      // Activer les étoiles selon la note
-      containers.forEach((container) => {
-        const containerRating = parseFloat(container.dataset.rating);
-        const starLeft = container.querySelector('.star-left');
-        const starRight = container.querySelector('.star-right');
-
-        if (rating >= containerRating) {
-          // Étoile complète
-          starLeft.classList.add(isHover ? 'hovered' : 'active');
-          starRight.classList.add(isHover ? 'hovered' : 'active');
-        } else if (rating >= containerRating - 0.5) {
-          // Demi-étoile
-          starLeft.classList.add(isHover ? 'hovered' : 'active');
-        }
-      });
-    }
-  }
-});
-</script>
 {% endblock %}

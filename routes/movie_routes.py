@@ -1,8 +1,9 @@
 import os
 import logging
-
 import requests
 from flask import Blueprint, render_template, jsonify, current_app, abort
+from flask_login import current_user  
+from models import Commentaire        
 
 movie_bp = Blueprint('movies', __name__, url_prefix='/movies')
 logger = logging.getLogger(__name__)
@@ -141,14 +142,19 @@ def movie_detail(tmdb_id: int):
     poster_url = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else None
     backdrop_url = f"https://image.tmdb.org/t/p/original{backdrop_path}" if backdrop_path else None
 
-    # Casting principal (quelques acteurs)
+    # Casting
     credits = movie.get("credits", {})
     cast = credits.get("cast", []) if isinstance(credits, dict) else []
-    main_cast = [
-        member.get("name")
-        for member in cast[:6]
-        if member.get("name")
-    ]
+    main_cast = [member.get("name") for member in cast[:6] if member.get("name")]
+
+    # --- NOUVEAU : Vérifier si le film est déjà dans la liste ---
+    interaction = None
+    if current_user.is_authenticated:
+        # On cherche s'il existe une liaison User-Film pour cet ID
+        interaction = Commentaire.query.filter_by(
+            ID_user=current_user.ID_user, 
+            ID_film=tmdb_id
+        ).first()
 
     return render_template(
         "movie_detail.html",
@@ -156,4 +162,5 @@ def movie_detail(tmdb_id: int):
         poster_url=poster_url,
         backdrop_url=backdrop_url,
         main_cast=main_cast,
+        interaction=interaction  # On passe l'info au template
     )
