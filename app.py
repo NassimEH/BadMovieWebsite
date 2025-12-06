@@ -25,10 +25,12 @@ def load_user(user_id):
 from routes.auth_routes import auth_bp
 from routes.movie_routes import movie_bp
 from routes.watchlist_routes import watchlist_bp
+from routes.settings_routes import settings_bp
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(movie_bp)
 app.register_blueprint(watchlist_bp)
+app.register_blueprint(settings_bp)
 
 
 @app.route('/')

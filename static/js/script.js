@@ -6,19 +6,24 @@ function toggleVideo() {
   trailer.classList.toggle('active');
 }
 
-function changeBg(bg, title) {
+// Fonction globale pour changer le fond d'écran
+window.changeBg = function(bg, title) {
   const banner = document.querySelector('.banner');
   const contents = document.querySelectorAll('.content');
   const categories = document.querySelector('.categories');
   
-  banner.style.background = `url("/static/images/movies/${bg}")`;
-  banner.style.backgroundSize = 'cover';
-  banner.style.backgroundPosition = 'center';
+  if (banner) {
+    banner.style.background = `url("/static/images/movies/${bg}")`;
+    banner.style.backgroundSize = 'cover';
+    banner.style.backgroundPosition = 'center';
+  }
 
-  contents.forEach(content => {
-    content.classList.remove('active');
-    if (content.classList.contains(title)) content.classList.add('active');
-  });
+  if (contents.length > 0) {
+    contents.forEach(content => {
+      content.classList.remove('active');
+      if (content.classList.contains(title)) content.classList.add('active');
+    });
+  }
 
   if (categories) {
     categories.classList.remove('bg-little-mermaid', 'bg-65', 'bg-the-covenant', 'bg-the-black-demon', 'bg-the-tank');
@@ -34,17 +39,35 @@ function changeBg(bg, title) {
 
   const moviesPage = document.querySelector('.movies-page');
   const moviesHero = document.querySelector('.movies-hero');
+  const watchlistHero = document.querySelector('.watchlist-hero');
+  
   if (moviesPage) {
-     // (Même logique que précédemment...)
-     moviesPage.classList.remove('bg-little-mermaid', 'bg-65', 'bg-the-covenant', 'bg-the-black-demon', 'bg-the-tank');
-     // ... (simplifié pour la lisibilité, gardez votre code de mapping ici si besoin)
+    moviesPage.classList.remove('bg-little-mermaid', 'bg-65', 'bg-the-covenant', 'bg-the-black-demon', 'bg-the-tank');
+    const bgClassMap = {
+      'the-little-mermaid': 'bg-little-mermaid',
+      'bg-65': 'bg-65',
+      'the-covenant': 'bg-the-covenant',
+      'the-black-demon': 'bg-the-black-demon',
+      'the-tank': 'bg-the-tank'
+    };
+    if (bgClassMap[title]) moviesPage.classList.add(bgClassMap[title]);
   }
+  
   if (moviesHero) {
     moviesHero.style.background = `url("/static/images/movies/${bg}")`;
     moviesHero.style.backgroundSize = 'cover';
     moviesHero.style.backgroundPosition = 'center top';
   }
-}
+  
+  if (watchlistHero) {
+    watchlistHero.style.background = `url("/static/images/movies/${bg}")`;
+    watchlistHero.style.backgroundSize = 'cover';
+    watchlistHero.style.backgroundPosition = 'center top';
+  }
+  
+  // Sauvegarder la préférence
+  localStorage.setItem('badmovie_background', JSON.stringify({ bg, title }));
+};;
 
 function mapHeadingToCategoryKey(heading) {
   if (!heading) return 'Autre';
@@ -530,5 +553,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         });
+    }
+
+    // Charger le fond d'écran sauvegardé (sauf sur la page settings)
+    if (!window.location.pathname.includes('/settings')) {
+        const savedBg = localStorage.getItem('badmovie_background');
+        if (savedBg) {
+            try {
+                const { bg, title } = JSON.parse(savedBg);
+                changeBg(bg, title);
+            } catch (e) {
+                console.error('Erreur lors du chargement du fond d\'écran:', e);
+            }
+        }
     }
 });

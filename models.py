@@ -10,6 +10,7 @@ class User(db.Model, UserMixin):
     nom = db.Column(db.String(50), nullable=False)
     password = db.Column(db.String(128), nullable=False)
     mail = db.Column(db.String(256), unique=True, nullable=False)
+    profile_picture = db.Column(db.String(500), nullable=True)
     commentaires = db.relationship('Commentaire', backref='user', lazy=True)
 
     def get_id(self):
