@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Pour vous - BadMovie{% endblock %}
+
+{% block content %}
+<div class="movies-page">
+<header>
+  <a href="{{ url_for('index') }}" class="logo">BadMovie<span class="logo-dot">.</span></a>
+  <ul class="nav">
+    <li>
+      <a href="{{ url_for('index') }}" title="Accueil"><i class="fa fa-home" aria-hidden="true"></i> </a>
+    </li>
+    <li><a href="{{ url_for('movies.list_movies') }}">Tous nos films</a></li>
+    <li><a href="{{ url_for('movies.coming_soon') }}">A venir</a></li>
+    <li><a href="{{ url_for('watchlist.show_watchlist') }}">Ma Liste</a></li>
+    <li><a href="{{ url_for('movies.for_you') }}">Pour vous</a></li>
+  </ul>
+  <div class="header-right">
+    <div class="auth-buttons">
+      {% if current_user.is_authenticated %}
+      <a href="{{ url_for('auth.logout') }}" class="auth-btn">Déconnexion</a>
+      <span class="user-name"><i class="fa fa-user" aria-hidden="true"></i> {{ current_user.nom }}</span>
+      {% else %}
+      <a href="{{ url_for('auth.login') }}" class="auth-btn">Connexion</a>
+      <a href="{{ url_for('auth.sign_up') }}" class="auth-btn auth-btn-outline">Inscription</a>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+<!-- Hero Section -->
+<div class="movies-hero">
+  <div class="movies-hero-content">
+    <h1 class="movies-hero-title">Pour vous</h1>
+    <p class="movies-hero-subtitle">Découvrez des films recommandés selon vos préférences</p>
+  </div>
+</div>
+
+<!-- Section de recommandations -->
+<section class="categories bg-little-mermaid">
+  <div class="container">
+    <div class="category">
+      <h2>Recommandations personnalisées</h2>
+      <div id="recommendations-container" class="category-content-placeholder">
+        <div class="loading-spinner">
+          <i class="fa fa-spinner" aria-hidden="true"></i>
+          <span>Chargement de vos recommandations...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const container = document.getElementById('recommendations-container');
+  
+  fetch('/movies/api/recommendations?limit=20')
+    .then(r => {
+      if (!r.ok) throw new Error('Erreur réseau');
+      return r.json();
+    })
+    .then(data => {
+      const movies = data.movies || [];
+      
+      if (movies.length === 0) {
+        container.innerHTML = `
+          <div class="no-movies">
+            <p>Nous n'avons pas encore assez d'informations sur vos préférences pour vous recommander des films.</p>
+            <p>Ajoutez des films à votre liste et notez-les pour recevoir des recommandations personnalisées !</p>
+          </div>
+        `;
+        return;
+      }
+      
+      // Construire les cartes de films
+      const cardsHtml = movies.map(movie => {
+        const imgSrc = movie.image || '/static/images/movies/the-little-mermaid.jpeg';
+        const safeTitle = (movie.title || 'Titre inconnu').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        const movieYear = movie.year || '';
+        const movieCategory = movie.category || 'Autre';
+        const movieId = movie.tmdb_id || movie.id || '';
+        
+        return `
+          <div class="movie-card-wrapper">
+            <a class="movie-card-link" href="/movies/${movieId}">
+              <div class="movie-card">
+                <div class="movie-card-poster">
+                  <img src="${imgSrc}" alt="${safeTitle}" loading="lazy"
+                       onerror="this.src='/static/images/movies/the-little-mermaid.jpeg'">
+                  <button class="movie-card-add-btn js-watchlist-btn" 
+                          data-tmdb-id="${movieId}"
+                          data-title="${safeTitle}"
+                          data-image="${movie.image || ''}"
+                          data-release-date="${movie.release_date || ''}"
+                          data-runtime="${movie.runtime || ''}"
+                          data-category="${movieCategory}"
+                          aria-label="Ajouter ${safeTitle} à ma liste"
+                          title="Ajouter à ma liste">
+                    <i class="fa fa-plus" aria-hidden="true"></i>
+                  </button>
+                </div>
+                <div class="movie-card-info">
+                  <h3 class="movie-card-title" title="${safeTitle}">${safeTitle}</h3>
+                  <p class="movie-card-meta">${movieYear}</p>
+                </div>
+              </div>
+            </a>
+          </div>
+        `;
+      }).join('');
+      
+      container.innerHTML = `
+        <div class="category-carousel">
+          <button class="category-carousel-btn prev" type="button"><i class="fa fa-chevron-left"></i></button>
+          <div class="category-carousel-track">${cardsHtml}</div>
+          <button class="category-carousel-btn next" type="button"><i class="fa fa-chevron-right"></i></button>
+        </div>
+      `;
+      
+      // Attacher les événements du carousel si la fonction existe
+      if (typeof attachCategoryCarouselEvents === 'function') {
+        attachCategoryCarouselEvents();
+      }
+    })
+    .catch(err => {
+      console.error('Erreur lors du chargement des recommandations:', err);
+      container.innerHTML = `
+        <div class="no-movies">
+          <p>Erreur lors du chargement de vos recommandations. Veuillez réessayer plus tard.</p>
+        </div>
+      `;
+    });
+});
+</script>
+{% endblock %}
+

@@ -9,14 +9,15 @@
       <a href="{{ url_for('index') }}" title="Accueil"><i class="fa fa-home" aria-hidden="true"></i> </a>
     </li>
     <li><a href="{{ url_for('movies.list_movies') }}">Tous nos films</a></li>
-    <li><a href="#">Ma Liste</a></li>
-    <li><a href="#">Pour vous</a></li>
+    <li><a href="{{ url_for('movies.coming_soon') }}">A venir</a></li>
+    <li><a href="{{ url_for('watchlist.show_watchlist') }}">Ma Liste</a></li>
+    <li><a href="{{ url_for('movies.for_you') }}">Pour vous</a></li>
   </ul>
   <div class="header-right">
     <div class="auth-buttons">
       {% if current_user.is_authenticated %}
       <a href="{{ url_for('auth.logout') }}" class="auth-btn">Déconnexion</a>
-      <span class="user-name">{{ current_user.nom }}</span>
+      <span class="user-name"><i class="fa fa-user" aria-hidden="true"></i> {{ current_user.nom }}</span>
       {% else %}
       <a href="{{ url_for('auth.login') }}" class="auth-btn">Connexion</a>
       <a href="{{ url_for('auth.sign_up') }}" class="auth-btn auth-btn-outline">Inscription</a>
@@ -53,6 +54,10 @@
           <option value="comédie">Comédie</option>
           <option value="thriller">Thriller</option>
           <option value="guerre">Guerre</option>
+          <option value="romance">Romance</option>
+          <option value="animation">Animation</option>
+          <option value="documentaire">Documentaire</option>
+          <option value="biographie">Biographie</option>
         </select>
       </div>
       
@@ -65,12 +70,23 @@
           <option value="2022">2022</option>
           <option value="2021">2021</option>
           <option value="2020">2020</option>
+          <option value="2019">2019</option>
+          <option value="2018">2018</option>
+          <option value="2017">2017</option>
+          <option value="2016">2016</option>
+          <option value="2015">2015</option>
+          <option value="2014">2014</option>
+          <option value="2013">2013</option>
+          <option value="2012">2012</option>
+          <option value="2011">2011</option>
+          <option value="2010">2010</option>
         </select>
       </div>
 
       <div class="filter-group">
         <label for="sort-filter">Trier par</label>
         <select id="sort-filter" class="filter-select">
+          <option value="popularity" selected>Popularité</option>
           <option value="recent">Plus récents</option>
           <option value="oldest">Plus anciens</option>
           <option value="title-asc">Titre (A-Z)</option>
@@ -89,85 +105,35 @@
   </div>
 </div>
 
-<!-- Sections de films par catégorie -->
+<!-- Section des films filtrés -->
 <section class="categories bg-little-mermaid">
   <div class="container">
-    <div class="category">
-      <h2>Films d'action</h2>
-      <div class="category-content-placeholder"></div>
-    </div>
-
-    <div class="category">
-      <h2>Films d'horreur</h2>
-      <div class="category-content-placeholder"></div>
-    </div>
-
-    <div class="category">
-      <h2>Films fantastique</h2>
-      <div class="category-content-placeholder"></div>
-    </div>
-
-    <div class="category">
-      <h2>Science-Fiction</h2>
-      <div class="category-content-placeholder"></div>
-    </div>
-
-    <div class="category">
-      <h2>Drame</h2>
-      <div class="category-content-placeholder"></div>
-    </div>
-
-    <div class="category">
-      <h2>Comédie</h2>
-      <div class="category-content-placeholder"></div>
-    </div>
-
-    <div class="category">
-      <h2>Thriller</h2>
-      <div class="category-content-placeholder"></div>
-    </div>
-
-    <div class="category">
-      <h2>Guerre</h2>
-      <div class="category-content-placeholder"></div>
-    </div>
-
-    <div class="category">
-      <h2>Romance</h2>
-      <div class="category-content-placeholder"></div>
-    </div>
-
-    <div class="category">
-      <h2>Animation</h2>
-      <div class="category-content-placeholder"></div>
-    </div>
-
-    <div class="category">
-      <h2>Documentaire</h2>
-      <div class="category-content-placeholder"></div>
-    </div>
-
-    <div class="category">
-      <h2>Biographie</h2>
-      <div class="category-content-placeholder"></div>
+    <div id="movies-results-container">
+      <div id="movies-grid" class="movies-filtered-grid">
+        <!-- Les films seront chargés ici dynamiquement -->
+      </div>
+      <div id="movies-loading" class="movies-loading">
+        <div class="loading-spinner">
+          <i class="fa fa-spinner fa-spin"></i> Chargement des films...
+        </div>
+      </div>
+      <div id="movies-empty" class="movies-empty" style="display: none;">
+        <p>Aucun film trouvé avec ces critères.</p>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- Pagination -->
-<div class="pagination-container">
+<div class="pagination-container" id="pagination-container" style="display: none;">
   <div class="pagination">
-    <button class="pagination-btn" onclick="changePage(-1)" disabled>
+    <button class="pagination-btn" id="pagination-prev" onclick="changePage(-1)" disabled>
       <i class="fa fa-chevron-left" aria-hidden="true"></i> Précédent
     </button>
-    <div class="pagination-pages">
-      <button class="pagination-page active" onclick="changePage(1)">1</button>
-      <button class="pagination-page" onclick="changePage(2)">2</button>
-      <button class="pagination-page" onclick="changePage(3)">3</button>
-      <span class="pagination-ellipsis">...</span>
-      <button class="pagination-page" onclick="changePage(10)">10</button>
+    <div class="pagination-pages" id="pagination-pages">
+      <!-- Les pages seront générées dynamiquement -->
     </div>
-    <button class="pagination-btn" onclick="changePage(1)">
+    <button class="pagination-btn" id="pagination-next" onclick="changePage(1)">
       Suivant <i class="fa fa-chevron-right" aria-hidden="true"></i>
     </button>
   </div>
@@ -177,44 +143,234 @@
 
 {% block scripts %}
 <script type="text/javascript">
+  let currentPage = 1;
+  let totalPages = 1;
+  let searchTimeout = null;
+
+  // Fonction pour construire l'URL de l'API avec les filtres
+  function buildApiUrl(page = 1) {
+    const search = document.getElementById('movie-search').value.trim();
+    const genre = document.getElementById('genre-filter').value;
+    const year = document.getElementById('year-filter').value;
+    const sort = document.getElementById('sort-filter').value;
+    
+    const params = new URLSearchParams();
+    if (search) params.append('search', search);
+    if (genre) params.append('genre', genre);
+    if (year) params.append('year', year);
+    if (sort) params.append('sort', sort);
+    params.append('page', page);
+    
+    return `/movies/api/filtered?${params.toString()}`;
+  }
+
+  // Fonction pour charger les films
+  function loadFilteredMovies(page = 1) {
+    const moviesGrid = document.getElementById('movies-grid');
+    const moviesLoading = document.getElementById('movies-loading');
+    const moviesEmpty = document.getElementById('movies-empty');
+    const paginationContainer = document.getElementById('pagination-container');
+    
+    moviesGrid.innerHTML = '';
+    moviesLoading.style.display = 'flex';
+    moviesEmpty.style.display = 'none';
+    paginationContainer.style.display = 'none';
+    
+    fetch(buildApiUrl(page))
+      .then(r => {
+        if (!r.ok) throw new Error('Erreur réseau');
+        return r.json();
+      })
+      .then(data => {
+        moviesLoading.style.display = 'none';
+        
+        if (data.error) {
+          moviesEmpty.style.display = 'block';
+          moviesEmpty.innerHTML = `<p>Erreur: ${data.error}</p>`;
+          return;
+        }
+        
+        const movies = data.movies || [];
+        currentPage = data.current_page || 1;
+        totalPages = data.total_pages || 1;
+        
+        if (movies.length === 0) {
+          moviesEmpty.style.display = 'block';
+          return;
+        }
+        
+        // Afficher les films - ne montrer que ceux avec une affiche valide
+        moviesGrid.innerHTML = movies
+          .filter(movie => movie.image && movie.image.trim() !== '') // Filtrer les films sans image
+          .map(movie => {
+            // Utiliser uniquement l'image du film (pas de fallback vers la petite sirène)
+            const imgSrc = movie.image;
+            
+            // Construire les métadonnées
+            const metaParts = [];
+            if (movie.year) metaParts.push(movie.year);
+            if (movie.duration) metaParts.push(movie.duration);
+            if (movie.category && movie.category !== 'Autre') metaParts.push(movie.category);
+            const meta = metaParts.join(' • ');
+            
+            // Échapper les caractères HTML pour éviter les problèmes
+            const safeTitle = movie.title.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            
+            return `
+              <div class="movie-card-wrapper">
+                <a class="movie-card-link" href="/movies/${movie.tmdb_id}">
+                  <div class="movie-card">
+                    <div class="movie-card-poster">
+                      <img src="${imgSrc}" 
+                           alt="${safeTitle}" 
+                           loading="lazy"
+                           onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\\'padding: 20px; text-align: center; color: rgba(255,255,255,0.5);\\'>Affiche indisponible</div>';">
+                      <button class="movie-card-add-btn js-watchlist-btn" 
+                              data-tmdb-id="${movie.tmdb_id}"
+                              data-title="${safeTitle}"
+                              data-image="${movie.image || ''}"
+                              data-release-date="${movie.release_date || ''}"
+                              data-runtime="${movie.runtime || ''}"
+                              data-category="${movie.category || 'Autre'}"
+                              aria-label="Ajouter ${safeTitle} à ma liste"
+                              title="Ajouter à ma liste">
+                        <i class="fa fa-plus" aria-hidden="true"></i>
+                      </button>
+                    </div>
+                    <div class="movie-card-info">
+                      <h3 class="movie-card-title" title="${safeTitle}">${safeTitle}</h3>
+                      <p class="movie-card-meta">${meta || 'Film'}</p>
+                    </div>
+                  </div>
+                </a>
+              </div>
+            `;
+          }).join('');
+        
+        // Mettre à jour la pagination
+        updatePagination();
+      })
+      .catch(err => {
+        console.error('Erreur lors du chargement des films:', err);
+        moviesLoading.style.display = 'none';
+        moviesEmpty.style.display = 'block';
+        moviesEmpty.innerHTML = '<p>Erreur lors du chargement des films. Veuillez réessayer.</p>';
+      });
+  }
+
+  // Fonction pour mettre à jour la pagination
+  function updatePagination() {
+    const paginationContainer = document.getElementById('pagination-container');
+    const paginationPages = document.getElementById('pagination-pages');
+    const paginationPrev = document.getElementById('pagination-prev');
+    const paginationNext = document.getElementById('pagination-next');
+    
+    if (totalPages <= 1) {
+      paginationContainer.style.display = 'none';
+      return;
+    }
+    
+    paginationContainer.style.display = 'flex';
+    paginationPrev.disabled = currentPage === 1;
+    paginationNext.disabled = currentPage === totalPages;
+    
+    // Générer les numéros de page
+    let pagesHtml = '';
+    const maxVisible = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+    
+    if (endPage - startPage < maxVisible - 1) {
+      startPage = Math.max(1, endPage - maxVisible + 1);
+    }
+    
+    if (startPage > 1) {
+      pagesHtml += `<button class="pagination-page" onclick="changePage(1)">1</button>`;
+      if (startPage > 2) {
+        pagesHtml += `<span class="pagination-ellipsis">...</span>`;
+      }
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      pagesHtml += `<button class="pagination-page ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+    }
+    
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        pagesHtml += `<span class="pagination-ellipsis">...</span>`;
+      }
+      pagesHtml += `<button class="pagination-page" onclick="changePage(${totalPages})">${totalPages}</button>`;
+    }
+    
+    paginationPages.innerHTML = pagesHtml;
+  }
+
+  // Fonction pour réinitialiser les filtres
   function resetFilters() {
     document.getElementById('movie-search').value = '';
     document.getElementById('genre-filter').value = '';
     document.getElementById('year-filter').value = '';
-    document.getElementById('sort-filter').value = 'recent';
+    document.getElementById('sort-filter').value = 'popularity';
+    currentPage = 1;
+    loadFilteredMovies(1);
   }
 
-  // Recherche en temps réel
-  document.getElementById('movie-search').addEventListener('input', function(e) {
-    // Logique de recherche à implémenter
-    console.log('Recherche:', e.target.value);
-  });
-
-  // Filtres
-  document.getElementById('genre-filter').addEventListener('change', function(e) {
-    console.log('Genre:', e.target.value);
-  });
-
-  document.getElementById('year-filter').addEventListener('change', function(e) {
-    console.log('Année:', e.target.value);
-  });
-
-  document.getElementById('sort-filter').addEventListener('change', function(e) {
-    console.log('Tri:', e.target.value);
-  });
-
-  // Pagination
-  function changePage(page) {
-    // Logique de pagination à implémenter
-    console.log('Changement de page:', page);
-    
-    // Mise à jour visuelle de la pagination
-    const pages = document.querySelectorAll('.pagination-page');
-    pages.forEach(p => p.classList.remove('active'));
-    if (page > 0 && page <= pages.length) {
-      pages[page - 1].classList.add('active');
+  // Fonction pour changer de page
+  function changePage(delta) {
+    if (delta === -1) {
+      // Page précédente
+      if (currentPage > 1) {
+        currentPage--;
+        loadFilteredMovies(currentPage);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    } else if (delta === 1) {
+      // Page suivante
+      if (currentPage < totalPages) {
+        currentPage++;
+        loadFilteredMovies(currentPage);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    } else if (typeof delta === 'number' && delta > 0) {
+      // Page spécifique
+      if (delta >= 1 && delta <= totalPages) {
+        currentPage = delta;
+        loadFilteredMovies(currentPage);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
   }
+
+  // Initialisation au chargement de la page
+  document.addEventListener('DOMContentLoaded', function() {
+    // Charger les films au démarrage
+    loadFilteredMovies(1);
+    
+    // Recherche avec debounce
+    document.getElementById('movie-search').addEventListener('input', function(e) {
+      clearTimeout(searchTimeout);
+      currentPage = 1;
+      searchTimeout = setTimeout(() => {
+        loadFilteredMovies(1);
+      }, 500);
+    });
+
+    // Filtres
+    document.getElementById('genre-filter').addEventListener('change', function() {
+      currentPage = 1;
+      loadFilteredMovies(1);
+    });
+
+    document.getElementById('year-filter').addEventListener('change', function() {
+      currentPage = 1;
+      loadFilteredMovies(1);
+    });
+
+    document.getElementById('sort-filter').addEventListener('change', function() {
+      currentPage = 1;
+      loadFilteredMovies(1);
+    });
+  });
 </script>
 {% endblock %}
 

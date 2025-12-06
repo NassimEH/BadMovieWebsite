@@ -10,14 +10,15 @@
       <a href="{{ url_for('index') }}" title="Accueil"><i class="fa fa-home" aria-hidden="true"></i> </a>
     </li>
     <li><a href="{{ url_for('movies.list_movies') }}">Tous nos films</a></li>
+    <li><a href="{{ url_for('movies.coming_soon') }}">A venir</a></li>
     <li><a href="{{ url_for('watchlist.show_watchlist') }}">Ma Liste</a></li>
-    <li><a href="#">Pour vous</a></li>
+    <li><a href="{{ url_for('movies.for_you') }}">Pour vous</a></li>
   </ul>
   <div class="header-right">
     <div class="auth-buttons">
       {% if current_user.is_authenticated %}
       <a href="{{ url_for('auth.logout') }}" class="auth-btn">Déconnexion</a>
-      <span class="user-name">{{ current_user.nom }}</span>
+      <span class="user-name"><i class="fa fa-user" aria-hidden="true"></i> {{ current_user.nom }}</span>
       {% else %}
       <a href="{{ url_for('auth.login') }}" class="auth-btn">Connexion</a>
       <a href="{{ url_for('auth.sign_up') }}" class="auth-btn auth-btn-outline">Inscription</a>
@@ -26,56 +27,245 @@
   </div>
 </header>
 
-<div class="container" style="margin-top: 100px; margin-bottom: 50px;">
-    <h2 class="center-align mb-4">Ma Watchlist</h2>
-
-    {% if watchlist %}
-        <div class="row">
-            {% for item in watchlist %}
-                <div class="col s12 m6 l3">
-                    <div class="card hoverable h-100">
-                        <div class="card-image">
-                            {% if item.film.image %}
-                                <img src="{{ item.film.image }}" alt="{{ item.film.name_movie }}">
-                            {% else %}
-                                <img src="{{ url_for('static', filename='images/default.jpg') }}" alt="Image par défaut">
-                            {% endif %}
-                            
-                            <a href="{{ url_for('movies.movie_detail', tmdb_id=item.film.ID_film) }}" 
-                               class="btn-floating halfway-fab waves-effect waves-light red">
-                                <i class="fa fa-eye"></i>
-                            </a>
-                        </div>
-                        <div class="card-content">
-                            <span class="card-title activator grey-text text-darken-4 truncate" style="font-size: 1.2rem;">
-                                {{ item.film.name_movie }}
-                            </span>
-                            <p>
-                                {% if item.watched %}
-                                    <span class="new badge green" data-badge-caption="Vu"></span>
-                                {% else %}
-                                    <span class="new badge orange" data-badge-caption="À voir"></span>
-                                {% endif %}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
+<div class="watchlist-page-container">
+    <div class="watchlist-hero">
+        <div class="watchlist-hero-content">
+            <h2 class="watchlist-page-title">Ma Watchlist</h2>
+            <p class="watchlist-hero-subtitle">Gérez vos films vus et à voir</p>
         </div>
-    {% else %}
-        <div class="row center-align">
-            <div class="col s12">
-                <div class="card-panel teal lighten-4">
-                    <span class="white-text">
-                        Votre liste est vide pour le moment. 
-                        <br>
-                        <a href="{{ url_for('movies.list_movies') }}" class="btn waves-effect waves-light mt-3">
-                            Découvrir des films
-                        </a>
-                    </span>
-                </div>
+    </div>
+
+    <!-- Filtres et tri -->
+    <div class="watchlist-filters-container">
+        <div class="watchlist-filters">
+            <div class="filter-group">
+                <label for="watchlist-status-filter">Statut</label>
+                <select id="watchlist-status-filter" class="filter-select">
+                    <option value="all">Tous les films</option>
+                    <option value="watched">Films vus</option>
+                    <option value="towatch">À voir</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="watchlist-sort-filter">Trier par</label>
+                <select id="watchlist-sort-filter" class="filter-select">
+                    <option value="date">Date d'ajout</option>
+                    <option value="title-asc">Titre (A-Z)</option>
+                    <option value="title-desc">Titre (Z-A)</option>
+                    <option value="rating-desc">Note (Meilleure → Pire)</option>
+                    <option value="rating-asc">Note (Pire → Meilleure)</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>&nbsp;</label>
+                <button class="filter-reset-btn" onclick="resetWatchlistFilters()">
+                    <i class="fa fa-refresh" aria-hidden="true"></i> Réinitialiser
+                </button>
             </div>
         </div>
-    {% endif %}
+    </div>
+
+    <!-- Sections Vu / À voir -->
+    <div id="watchlist-content">
+        <!-- Section Films vus -->
+        <div id="watched-section" class="watchlist-section" style="display: none;">
+            <h3 class="watchlist-section-title">
+                <i class="fa fa-check-circle" aria-hidden="true"></i> Films vus
+                <span class="watchlist-section-count" id="watched-count">(0)</span>
+            </h3>
+            <div id="watched-movies-grid" class="watchlist-movies-grid">
+                <!-- Films vus chargés dynamiquement -->
+            </div>
+        </div>
+
+        <!-- Section À voir -->
+        <div id="towatch-section" class="watchlist-section" style="display: none;">
+            <h3 class="watchlist-section-title">
+                <i class="fa fa-eye" aria-hidden="true"></i> À voir
+                <span class="watchlist-section-count" id="towatch-count">(0)</span>
+            </h3>
+            <div id="towatch-movies-grid" class="watchlist-movies-grid">
+                <!-- Films à voir chargés dynamiquement -->
+            </div>
+        </div>
+
+        <!-- Message si aucun film -->
+        <div id="watchlist-empty" class="watchlist-empty-container" style="display: none;">
+            <div class="watchlist-empty-card">
+                <div class="watchlist-empty-icon">
+                    <i class="fa fa-film" aria-hidden="true"></i>
+                </div>
+                <h3 class="watchlist-empty-title">Aucun film trouvé</h3>
+                <p class="watchlist-empty-message">
+                    Aucun film ne correspond à vos critères de filtrage.
+                </p>
+                <button class="watchlist-empty-btn" onclick="resetWatchlistFilters()">
+                    <i class="fa fa-refresh" aria-hidden="true"></i> Réinitialiser les filtres
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indicateur de chargement -->
+    <div id="watchlist-loading" class="watchlist-loading">
+        <div class="loading-spinner">
+            <i class="fa fa-spinner fa-spin"></i> Chargement de votre watchlist...
+        </div>
+    </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+  let currentStatusFilter = 'all';
+  let currentSortFilter = 'date';
+
+  function buildWatchlistMovieCard(movie) {
+    const imgSrc = movie.image || '/static/images/movies/the-little-mermaid.jpeg';
+    const safeTitle = movie.title.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    
+    const metaParts = [];
+    if (movie.year) metaParts.push(movie.year);
+    if (movie.duration) metaParts.push(movie.duration);
+    if (movie.category) metaParts.push(movie.category);
+    const meta = metaParts.join(' • ');
+    
+    const scoreDisplay = movie.score !== null && movie.score !== undefined 
+      ? `<div class="watchlist-movie-score">
+           <i class="fa fa-star" aria-hidden="true"></i> ${movie.score}/5
+         </div>` 
+      : '';
+    
+    const reviewIndicator = movie.review && movie.review.trim() !== ''
+      ? '<div class="movie-review-indicator" title="Critique disponible"><i class="fa fa-comment" aria-hidden="true"></i></div>'
+      : '';
+    
+    return `
+      <a class="movie-card-link" href="/movies/${movie.tmdb_id}">
+        <div class="movie-card watchlist-movie-card">
+          <div class="movie-card-poster">
+            <img src="${imgSrc}" 
+                 alt="${safeTitle}" 
+                 loading="lazy"
+                 onerror="this.src='/static/images/movies/the-little-mermaid.jpeg'">
+            <div class="movie-card-status">
+              ${movie.watched 
+                ? '<span class="movie-status-badge movie-status-watched"><i class="fa fa-check-circle" aria-hidden="true"></i> Vu</span>'
+                : '<span class="movie-status-badge movie-status-towatch"><i class="fa fa-eye" aria-hidden="true"></i> À voir</span>'
+              }
+            </div>
+            ${scoreDisplay}
+            ${reviewIndicator}
+          </div>
+          <div class="movie-card-info">
+            <h3 class="movie-card-title" title="${safeTitle}">${safeTitle}</h3>
+            <p class="movie-card-meta">${meta || 'Film'}</p>
+          </div>
+        </div>
+      </a>
+    `;
+  }
+
+  function loadFilteredWatchlist() {
+    const watchedGrid = document.getElementById('watched-movies-grid');
+    const towatchGrid = document.getElementById('towatch-movies-grid');
+    const watchedSection = document.getElementById('watched-section');
+    const towatchSection = document.getElementById('towatch-section');
+    const emptyContainer = document.getElementById('watchlist-empty');
+    const loadingContainer = document.getElementById('watchlist-loading');
+    
+    watchedGrid.innerHTML = '';
+    towatchGrid.innerHTML = '';
+    loadingContainer.style.display = 'flex';
+    emptyContainer.style.display = 'none';
+    watchedSection.style.display = 'none';
+    towatchSection.style.display = 'none';
+    
+    const params = new URLSearchParams();
+    params.append('status', currentStatusFilter);
+    params.append('sort', currentSortFilter);
+    
+    fetch(`/watchlist/api/filtered?${params.toString()}`)
+      .then(r => {
+        if (!r.ok) throw new Error('Erreur réseau');
+        return r.json();
+      })
+      .then(data => {
+        loadingContainer.style.display = 'none';
+        
+        const movies = data.movies || [];
+        const watchedMovies = movies.filter(m => m.watched);
+        const towatchMovies = movies.filter(m => !m.watched);
+        
+        // Mettre à jour les compteurs
+        document.getElementById('watched-count').textContent = `(${watchedMovies.length})`;
+        document.getElementById('towatch-count').textContent = `(${towatchMovies.length})`;
+        
+        // Afficher les sections selon le filtre
+        if (currentStatusFilter === 'all') {
+          // Afficher les deux sections
+          if (watchedMovies.length > 0) {
+            watchedSection.style.display = 'block';
+            watchedGrid.innerHTML = watchedMovies.map(buildWatchlistMovieCard).join('');
+          }
+          if (towatchMovies.length > 0) {
+            towatchSection.style.display = 'block';
+            towatchGrid.innerHTML = towatchMovies.map(buildWatchlistMovieCard).join('');
+          }
+          if (watchedMovies.length === 0 && towatchMovies.length === 0) {
+            emptyContainer.style.display = 'block';
+          }
+        } else if (currentStatusFilter === 'watched') {
+          // Afficher seulement les films vus
+          if (watchedMovies.length > 0) {
+            watchedSection.style.display = 'block';
+            watchedGrid.innerHTML = watchedMovies.map(buildWatchlistMovieCard).join('');
+          } else {
+            emptyContainer.style.display = 'block';
+          }
+        } else if (currentStatusFilter === 'towatch') {
+          // Afficher seulement les films à voir
+          if (towatchMovies.length > 0) {
+            towatchSection.style.display = 'block';
+            towatchGrid.innerHTML = towatchMovies.map(buildWatchlistMovieCard).join('');
+          } else {
+            emptyContainer.style.display = 'block';
+          }
+        }
+      })
+      .catch(err => {
+        console.error('Erreur lors du chargement de la watchlist:', err);
+        loadingContainer.style.display = 'none';
+        emptyContainer.style.display = 'block';
+        emptyContainer.querySelector('.watchlist-empty-title').textContent = 'Erreur de chargement';
+        emptyContainer.querySelector('.watchlist-empty-message').textContent = 'Une erreur est survenue lors du chargement de votre watchlist.';
+      });
+  }
+
+  function resetWatchlistFilters() {
+    document.getElementById('watchlist-status-filter').value = 'all';
+    document.getElementById('watchlist-sort-filter').value = 'date';
+    currentStatusFilter = 'all';
+    currentSortFilter = 'date';
+    loadFilteredWatchlist();
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // Charger la watchlist au démarrage
+    loadFilteredWatchlist();
+    
+    // Écouter les changements de filtres
+    document.getElementById('watchlist-status-filter').addEventListener('change', function() {
+      currentStatusFilter = this.value;
+      loadFilteredWatchlist();
+    });
+    
+    document.getElementById('watchlist-sort-filter').addEventListener('change', function() {
+      currentSortFilter = this.value;
+      loadFilteredWatchlist();
+    });
+  });
+</script>
 {% endblock %}

@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}A venir - BadMovie{% endblock %}
+
+{% block content %}
+<div class="movies-page">
+<header>
+  <a href="{{ url_for('index') }}" class="logo">BadMovie<span class="logo-dot">.</span></a>
+  <ul class="nav">
+    <li>
+      <a href="{{ url_for('index') }}" title="Accueil"><i class="fa fa-home" aria-hidden="true"></i> </a>
+    </li>
+    <li><a href="{{ url_for('movies.list_movies') }}">Tous nos films</a></li>
+    <li><a href="{{ url_for('movies.coming_soon') }}">A venir</a></li>
+    <li><a href="{{ url_for('watchlist.show_watchlist') }}">Ma Liste</a></li>
+    <li><a href="{{ url_for('movies.for_you') }}">Pour vous</a></li>
+  </ul>
+  <div class="header-right">
+    <div class="auth-buttons">
+      {% if current_user.is_authenticated %}
+      <a href="{{ url_for('auth.logout') }}" class="auth-btn">Déconnexion</a>
+      <span class="user-name"><i class="fa fa-user" aria-hidden="true"></i> {{ current_user.nom }}</span>
+      {% else %}
+      <a href="{{ url_for('auth.login') }}" class="auth-btn">Connexion</a>
+      <a href="{{ url_for('auth.sign_up') }}" class="auth-btn auth-btn-outline">Inscription</a>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+<!-- Hero Section -->
+<div class="movies-hero">
+  <div class="movies-hero-content">
+    <h1 class="movies-hero-title">Films à venir</h1>
+    <p class="movies-hero-subtitle">Découvrez les prochaines sorties cinématographiques</p>
+  </div>
+</div>
+
+<!-- Sections de films par année -->
+<section class="categories bg-little-mermaid">
+  <div class="container">
+    <div class="category">
+      <h2>Films de 2026</h2>
+      <div class="category-content-placeholder" data-year="2026"></div>
+    </div>
+
+    <div class="category">
+      <h2>Films de 2027</h2>
+      <div class="category-content-placeholder" data-year="2027"></div>
+    </div>
+
+    <div class="category">
+      <h2>Films de 2028</h2>
+      <div class="category-content-placeholder" data-year="2028"></div>
+    </div>
+
+    <div class="category">
+      <h2>Films de 2029</h2>
+      <div class="category-content-placeholder" data-year="2029"></div>
+    </div>
+
+    <div class="category">
+      <h2>Films de 2030</h2>
+      <div class="category-content-placeholder" data-year="2030"></div>
+    </div>
+  </div>
+</section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+  function buildMovieCardHtml(movie) {
+    const imgSrc = movie.image || 'https://via.placeholder.com/500x750/1a1a1a/ffffff?text=No+Image';
+    const defaultImg = '/static/images/movies/the-little-mermaid.jpeg';
+    
+    const metaParts = [];
+    if (movie.year) metaParts.push(movie.year);
+    if (movie.duration) metaParts.push(movie.duration);
+    if (movie.category && movie.category !== 'Autre') metaParts.push(movie.category);
+    const meta = metaParts.join(' • ');
+    
+    const safeTitle = movie.title.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    
+    return `
+      <div class="movie-card-wrapper">
+        <a class="movie-card-link" href="/movies/${movie.tmdb_id}">
+          <div class="movie-card">
+            <div class="movie-card-poster">
+              <img src="${imgSrc}" 
+                   alt="${safeTitle}" 
+                   loading="lazy"
+                   onerror="this.onerror=null; this.src='${defaultImg}';">
+              <button class="movie-card-add-btn js-watchlist-btn" 
+                      data-tmdb-id="${movie.tmdb_id}"
+                      data-title="${safeTitle}"
+                      data-image="${movie.image || ''}"
+                      data-release-date="${movie.release_date || ''}"
+                      data-runtime="${movie.runtime || ''}"
+                      data-category="${movie.category || 'Autre'}"
+                      aria-label="Ajouter ${safeTitle} à ma liste"
+                      title="Ajouter à ma liste">
+                <i class="fa fa-plus" aria-hidden="true"></i>
+              </button>
+            </div>
+            <div class="movie-card-info">
+              <h3 class="movie-card-title" title="${safeTitle}">${safeTitle}</h3>
+              <p class="movie-card-meta">${meta || 'Film'}</p>
+            </div>
+          </div>
+        </a>
+      </div>
+    `;
+  }
+
+  function buildCategoryCarouselHtml(movies) {
+    if (!movies || movies.length === 0) {
+      return '<p class="no-movies">Aucun film disponible pour le moment.</p>';
+    }
+    
+    const cardsHtml = movies.map(buildMovieCardHtml).join('');
+    
+    return `
+      <div class="category-carousel">
+        <button class="category-carousel-btn prev" type="button"><i class="fa fa-chevron-left"></i></button>
+        <div class="category-carousel-track">${cardsHtml}</div>
+        <button class="category-carousel-btn next" type="button"><i class="fa fa-chevron-right"></i></button>
+      </div>
+    `;
+  }
+
+  function attachCategoryCarouselEvents() {
+    const carousels = document.querySelectorAll('.category-carousel');
+    carousels.forEach((carousel) => {
+      const track = carousel.querySelector('.category-carousel-track');
+      const prevBtn = carousel.querySelector('.category-carousel-btn.prev');
+      const nextBtn = carousel.querySelector('.category-carousel-btn.next');
+      if (!track) return;
+      
+      const getScrollAmount = () => {
+        const firstCard = track.querySelector('.movie-card');
+        if (!firstCard) return 0;
+        const style = window.getComputedStyle(firstCard);
+        return firstCard.offsetWidth + (parseInt(style.marginRight, 10) || 0);
+      };
+      
+      if (prevBtn) prevBtn.addEventListener('click', () => track.scrollBy({ left: -getScrollAmount(), behavior: 'smooth' }));
+      if (nextBtn) nextBtn.addEventListener('click', () => track.scrollBy({ left: getScrollAmount(), behavior: 'smooth' }));
+    });
+  }
+
+  function loadComingSoonMovies() {
+    const categorySections = document.querySelectorAll('.category');
+    if (!categorySections.length) return;
+    
+    // Afficher un indicateur de chargement
+    categorySections.forEach((section) => {
+      const placeholder = section.querySelector('.category-content-placeholder');
+      if (placeholder) {
+        placeholder.innerHTML = '<div class="loading-spinner"><i class="fa fa-spinner fa-spin"></i> Chargement...</div>';
+      }
+    });
+    
+    fetch('/movies/api/coming-soon')
+      .then((r) => {
+        if (!r.ok) throw new Error('Erreur réseau');
+        return r.json();
+      })
+      .then((data) => {
+        if (data.error) {
+          console.error('Erreur API:', data.error);
+          categorySections.forEach((section) => {
+            const placeholder = section.querySelector('.category-content-placeholder');
+            if (placeholder) {
+              placeholder.innerHTML = '<p class="no-movies">Erreur de chargement.</p>';
+            }
+          });
+          return;
+        }
+        
+        categorySections.forEach((section) => {
+          const h2 = section.querySelector('h2');
+          const placeholder = section.querySelector('.category-content-placeholder');
+          if (!h2 || !placeholder) return;
+          
+          // Extraire l'année du titre (ex: "Films de 2026" -> "2026")
+          const yearMatch = h2.textContent.match(/\d{4}/);
+          if (!yearMatch) return;
+          
+          const year = yearMatch[0];
+          const movies = data[year] || [];
+          
+          placeholder.innerHTML = movies.length ? buildCategoryCarouselHtml(movies) : '<p class="no-movies">Aucun film disponible pour le moment.</p>';
+        });
+        
+        attachCategoryCarouselEvents();
+      })
+      .catch((e) => {
+        console.error('Erreur lors du chargement des films à venir:', e);
+        categorySections.forEach((section) => {
+          const placeholder = section.querySelector('.category-content-placeholder');
+          if (placeholder) {
+            placeholder.innerHTML = '<p class="no-movies">Erreur de chargement.</p>';
+          }
+        });
+      });
+  }
+
+  document.addEventListener('DOMContentLoaded', loadComingSoonMovies);
+</script>
+{% endblock %}
+

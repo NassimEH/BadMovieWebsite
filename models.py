@@ -21,7 +21,7 @@ class Film(db.Model):
     """Modèle film."""
     __tablename__ = 'movies'
     ID_film = db.Column(db.Integer, primary_key=True)
-    image = db.Column(db.String(200))
+    image = db.Column(db.String(500))
     name_movie = db.Column(db.String(100), nullable=False)
     year_movie = db.Column(db.Date)
     duration = db.Column(db.Time)

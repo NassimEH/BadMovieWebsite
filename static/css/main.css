@@ -131,8 +131,31 @@ header {
 
 .user-name {
   color: #ffffff;
-  margin-left: 6px;
+  margin-left: 12px;
   font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(0, 102, 255, 0.15);
+  border: 1px solid rgba(0, 102, 255, 0.3);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  font-size: 0.95em;
+  letter-spacing: 0.5px;
+}
+
+.user-name i {
+  color: var(--primary);
+  font-size: 1em;
+}
+
+.user-name:hover {
+  background: rgba(0, 102, 255, 0.25);
+  border-color: rgba(0, 102, 255, 0.5);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
 }
 
 .search {
@@ -492,6 +515,20 @@ header {
     position: static;
     transform: none;
     margin-top: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .user-name {
+    font-size: 0.8em;
+    padding: 6px 10px;
+    margin-left: 6px;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  .user-name i {
+    font-size: 0.9em;
   }
 
   .header-right {
@@ -611,6 +648,164 @@ header {
   width: 100%;
 }
 
+.loading-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.1em;
+  gap: 12px;
+}
+
+.loading-spinner i {
+  font-size: 1.5em;
+  color: var(--primary);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.no-movies {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 40px 20px;
+  font-size: 0.95em;
+}
+
+/* ==================== GRILLE DE FILMS FILTRÉS ==================== */
+.movies-filtered-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 24px;
+  padding: 20px 0;
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  align-items: start;
+  justify-items: stretch; /* Étire les éléments pour remplir l'espace */
+  grid-auto-flow: row; /* Assure que les éléments se placent en lignes */
+}
+
+.movies-filtered-grid .movie-card-wrapper {
+  width: 100%;
+  display: block;
+  min-width: 0; /* Permet au wrapper de se rétrécir */
+  overflow: hidden; /* Empêche le débordement */
+}
+
+.movies-filtered-grid .movie-card-link {
+  width: 100%;
+  display: block;
+}
+
+.movies-filtered-grid .movie-card {
+  width: 100%;
+  min-width: 0; /* Permet à la carte de se rétrécir */
+  max-width: none; /* Supprime toute limitation max-width */
+  margin: 0; /* Supprime le margin auto qui peut causer des problèmes */
+  box-sizing: border-box; /* Inclut padding et border dans la largeur */
+  height: 100%; /* Permet à la carte de remplir toute la hauteur de la cellule */
+  min-height: 360px; /* Hauteur minimale fixe */
+  display: flex;
+  flex-direction: column;
+}
+
+.movies-filtered-grid .movie-card-poster {
+  width: 100%;
+  height: 240px; /* Hauteur fixe pour le poster */
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px 12px 0 0;
+  flex-shrink: 0; /* Empêche le poster de rétrécir */
+}
+
+.movies-filtered-grid .movie-card-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.movies-filtered-grid .movie-card-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 80px;
+  max-height: 120px;
+}
+
+.movies-filtered-grid .movie-card-title {
+  min-height: 2.6em;
+  max-height: 2.6em;
+}
+
+.movies-filtered-grid .movie-card-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: auto;
+}
+
+.movies-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 20px;
+  min-height: 300px;
+  width: 100%;
+}
+
+.movies-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.1em;
+  width: 100%;
+}
+
+.movies-empty p {
+  margin: 0;
+}
+
+/* Responsive pour la grille de films filtrés */
+@media (max-width: 1200px) {
+  .movies-filtered-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+  }
+}
+
+@media (max-width: 991px) {
+  .movies-filtered-grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 18px;
+  }
+}
+
+@media (max-width: 768px) {
+  .movies-filtered-grid {
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .movies-filtered-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 14px;
+  }
+}
+
 /* --- Carousel par catégorie de films --- */
 .category-carousel {
   position: relative;
@@ -676,6 +871,49 @@ header {
 }
 
 /* Cartes film dans le carousel */
+.category-carousel-track .movie-card-wrapper {
+  flex-shrink: 0;
+  width: 180px; /* Largeur fixe pour les cartes dans le carousel */
+}
+
+.category-carousel-track .movie-card {
+  height: 360px; /* Hauteur fixe pour toutes les cartes */
+  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+}
+
+.category-carousel-track .movie-card-poster {
+  height: 240px; /* Hauteur fixe pour le poster */
+  flex-shrink: 0;
+}
+
+.category-carousel-track .movie-card-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 80px;
+  max-height: 120px;
+}
+
+.category-carousel-track .movie-card-title {
+  min-height: 2.6em;
+  max-height: 2.6em;
+}
+
+.category-carousel-track .movie-card-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: auto;
+}
+
+.movie-card-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
 .movie-card-link {
   display: inline-block;
   text-decoration: none;
@@ -685,12 +923,16 @@ header {
 .movie-card {
   min-width: 160px;
   max-width: 200px;
+  height: 100%; /* Hauteur flexible pour s'adapter à la grille */
+  min-height: 360px; /* Hauteur minimale fixe */
   background: rgba(0, 0, 0, 0.55);
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.45);
   transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .movie-card:hover {
@@ -699,27 +941,127 @@ header {
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.7);
 }
 
+.movie-card-poster {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  flex-shrink: 0; /* Empêche le poster de rétrécir */
+  height: 240px; /* Hauteur fixe pour le poster */
+}
+
 .movie-card-poster img {
   width: 100%;
-  height: 220px;
+  height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 0.3s ease;
+}
+
+.movie-card:hover .movie-card-poster img {
+  transform: scale(1.05);
+}
+
+.movie-card-add-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0, 102, 255, 0.9);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.3s ease;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  font-size: 1.2em;
+  padding: 0;
+  margin: 0;
+}
+
+.movie-card-wrapper:hover .movie-card-add-btn {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.movie-card-add-btn:hover {
+  background: var(--primary);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 102, 255, 0.6);
+}
+
+.movie-card-add-btn:active {
+  transform: scale(0.95);
+}
+
+.movie-card-add-btn i {
+  font-size: 1em;
+  line-height: 1;
+}
+
+.movie-card-add-btn.added {
+  background: rgba(40, 167, 69, 0.9);
+  border-color: rgba(40, 167, 69, 0.5);
+  opacity: 1;
+}
+
+.movie-card-add-btn.added i::before {
+  content: '\f00c'; /* icône check */
 }
 
 .movie-card-info {
-  padding: 10px 12px 12px;
+  padding: 12px 14px 14px;
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.4) 100%);
+  flex: 1; /* Prend l'espace restant */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 80px; /* Hauteur minimale pour l'info */
+  max-height: 120px; /* Hauteur maximale pour l'info */
 }
 
 .movie-card-title {
   font-size: 0.95em;
   color: #ffffff;
-  font-weight: 600;
-  margin-bottom: 4px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  line-height: 1.3;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+  transition: color 0.3s ease;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Maximum 2 lignes */
+  -webkit-box-orient: vertical;
+  min-height: 2.6em; /* Hauteur minimale pour 2 lignes */
+  max-height: 2.6em; /* Hauteur maximale pour 2 lignes */
+}
+
+.movie-card:hover .movie-card-title {
+  color: rgba(255, 255, 255, 1);
+  text-shadow: 0 2px 12px rgba(0, 102, 255, 0.5);
 }
 
 .movie-card-meta {
   font-size: 0.8em;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 400;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1; /* Maximum 1 ligne */
+  -webkit-box-orient: vertical;
+  white-space: nowrap;
+  margin-top: auto; /* Pousse vers le bas */
 }
 
 /* ==================== PAGE DETAIL FILM ==================== */
@@ -1084,21 +1426,224 @@ header {
   text-align: center;
 }
 
+.star-rating-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 8px 0;
+  overflow: hidden;
+}
+
 .movie-rating-section .star-rating {
   justify-content: center;
+  min-width: 250px;
+  max-width: 300px;
+  flex-shrink: 0;
 }
 
 .movie-rating-section .rating-display {
   justify-content: center;
 }
 
+/* ==================== SECTION CRITIQUE ==================== */
+.movie-review-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  margin-top: 24px;
+}
+
+.movie-review-section .movie-detail-section-title {
+  font-size: 1em;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.review-login-prompt {
+  text-align: center;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.review-login-prompt p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9em;
+  margin: 0;
+}
+
+.review-login-prompt a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.review-login-prompt a:hover {
+  color: #0052d6;
+  text-decoration: underline;
+}
+
+.review-form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.review-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 14px 16px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 0.95em;
+  font-family: inherit;
+  line-height: 1.6;
+  resize: vertical;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.review-textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 15px rgba(0, 102, 255, 0.3);
+}
+
+.review-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.review-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.review-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.review-btn i {
+  font-size: 0.9em;
+}
+
+.review-btn-primary {
+  background: var(--primary);
+  color: #ffffff;
+  border: 2px solid var(--primary);
+}
+
+.review-btn-primary:hover {
+  background: #0052d6;
+  border-color: #0052d6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.4);
+}
+
+.review-btn-primary:active {
+  transform: translateY(0);
+}
+
+.review-btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.review-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.review-btn-secondary:active {
+  transform: translateY(0);
+}
+
+.review-status {
+  text-align: center;
+  padding: 8px;
+  font-size: 0.85em;
+  font-weight: 500;
+  min-height: 20px;
+  transition: all 0.3s ease;
+}
+
+.review-status-success {
+  color: #28a745;
+  background: rgba(40, 167, 69, 0.1);
+  border-radius: 4px;
+  border: 1px solid rgba(40, 167, 69, 0.3);
+}
+
+.review-status-error {
+  color: #dc3545;
+  background: rgba(220, 53, 69, 0.1);
+  border-radius: 4px;
+  border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+/* Indicateur de critique dans la watchlist */
+.movie-review-indicator {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(0, 102, 255, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 0.9em;
+  z-index: 5;
+  box-shadow: 0 4px 15px rgba(0, 102, 255, 0.5),
+              0 0 20px rgba(0, 102, 255, 0.3);
+  transition: all 0.3s ease;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.movie-review-indicator:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 102, 255, 0.7),
+              0 0 30px rgba(0, 102, 255, 0.4);
+}
+
+.movie-review-indicator i {
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+}
+
 .star-rating {
   display: flex;
-  gap: 4px;
+  gap: 0;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   padding: 12px 0;
   justify-content: center;
+  width: 100%;
 }
 
 .star-container {
@@ -1107,14 +1652,15 @@ header {
   width: 50px;
   height: 50px;
   cursor: pointer;
-  margin: 0 2px;
+  margin: 0;
+  flex-shrink: 0;
 }
 
 .star {
   position: absolute;
   top: 0;
-  font-size: 2.5em;
-  color: rgba(255, 255, 255, 0.25);
+  font-size: 2.8em;
+  color: rgba(255, 255, 255, 0.2);
   transition: all 0.2s ease;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
   line-height: 1;
@@ -1124,18 +1670,30 @@ header {
   overflow: hidden;
   display: flex;
   align-items: center;
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
+}
+
+.star i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  -webkit-text-stroke: 0.5px rgba(0, 0, 0, 0.2);
+  font-style: normal;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .star-left {
   left: 0;
   justify-content: flex-start;
-  padding-left: 2px;
+  padding-left: 1px;
 }
 
 .star-right {
   right: 0;
   justify-content: flex-end;
-  padding-right: 2px;
+  padding-right: 1px;
 }
 
 .star-rating[data-disabled="true"] .star-container {
@@ -1146,13 +1704,16 @@ header {
 
 .star:hover,
 .star.hovered {
-  color: #ffcc33;
-  text-shadow: 0 0 15px rgba(255, 204, 51, 0.8), 0 2px 8px rgba(0, 0, 0, 0.6);
+  color: #ffd700;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 1), 0 0 30px rgba(255, 215, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.8);
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8)) brightness(1.2);
+  transform: scale(1.1);
 }
 
 .star.active {
-  color: #ffcc33;
-  text-shadow: 0 0 20px rgba(255, 204, 51, 0.9), 0 2px 10px rgba(0, 0, 0, 0.7);
+  color: #ffd700;
+  text-shadow: 0 0 25px rgba(255, 215, 0, 1), 0 0 35px rgba(255, 215, 0, 0.7), 0 2px 10px rgba(0, 0, 0, 0.8);
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.9)) brightness(1.3);
 }
 
 .star.active .fa-star-o::before {
@@ -1172,7 +1733,18 @@ header {
 }
 
 .star-container:hover .star {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Amélioration de l'affichage des demi-étoiles */
+.star-container:hover .star-left.hovered,
+.star-container:hover .star-left.active {
+  color: #ffd700;
+}
+
+.star-container:hover .star-right.hovered,
+.star-container:hover .star-right.active {
+  color: #ffd700;
 }
 
 .rating-display {
@@ -1253,6 +1825,23 @@ header {
   border-color: rgba(255, 255, 255, 0.35);
   transform: translateY(-3px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.secondary-btn.js-watchlist-remove {
+  background: rgba(0, 102, 255, 0.2);
+  border-color: rgba(0, 102, 255, 0.4);
+  cursor: pointer;
+}
+
+.secondary-btn.js-watchlist-remove:hover {
+  background: rgba(220, 53, 69, 0.2);
+  border-color: rgba(220, 53, 69, 0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(220, 53, 69, 0.3);
+}
+
+.secondary-btn.js-watchlist-remove:hover i {
+  color: #dc3545;
 }
 
 .secondary-btn i {
@@ -1453,10 +2042,10 @@ header {
   }
 }
 
-/* User name in nav */
+/* User name in nav - styles supplémentaires pour cohérence */
 .user-name {
-  color: #e94560 !important;
-  font-weight: 600;
+  color: #ffffff !important;
+  font-weight: 500;
 }
 
 /* ==================== FOOTER ==================== */
@@ -2555,4 +3144,748 @@ header {
     padding: 40px 20px;
   }
 
+}
+
+/* ==================== PAGE WATCHLIST ==================== */
+.watchlist-page-container {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  padding: 120px 100px 80px;
+  background: #000000;
+  overflow-x: hidden;
+}
+
+.watchlist-page-container::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('../images/movies/bg-little-mermaid.jpg') no-repeat center;
+  background-size: cover;
+  filter: blur(5px) brightness(0.25);
+  z-index: 1;
+  transition: background-image 0.5s ease;
+}
+
+.watchlist-page-container::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.7) 100%);
+  z-index: 2;
+}
+
+/* Hero section pour la watchlist */
+.watchlist-hero {
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  margin-bottom: 60px;
+  padding: 40px 0;
+}
+
+.watchlist-hero-content {
+  position: relative;
+  z-index: 3;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.watchlist-page-title {
+  position: relative;
+  z-index: 3;
+  color: #ffffff;
+  font-size: 3em;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 20px;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.9), 0 0 30px rgba(0, 102, 255, 0.3);
+  padding-bottom: 25px;
+  background: linear-gradient(135deg, #ffffff 0%, rgba(0, 102, 255, 0.8) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.watchlist-page-title::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 0;
+  width: 150px;
+  height: 5px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  border-radius: 3px;
+  box-shadow: 0 0 20px rgba(0, 102, 255, 0.6);
+}
+
+.watchlist-hero-subtitle {
+  position: relative;
+  z-index: 3;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 1.3em;
+  font-weight: 300;
+  text-align: center;
+  margin-bottom: 0;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+}
+
+/* Filtres pour la watchlist */
+.watchlist-filters-container {
+  position: relative;
+  z-index: 3;
+  margin-bottom: 60px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.watchlist-filters {
+  display: flex;
+  gap: 25px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 35px 40px;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 20, 50, 0.5) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-radius: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 
+              0 0 0 1px rgba(0, 102, 255, 0.1) inset,
+              0 0 40px rgba(0, 102, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.watchlist-filters:hover {
+  border-color: rgba(0, 102, 255, 0.3);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 
+              0 0 0 1px rgba(0, 102, 255, 0.2) inset,
+              0 0 60px rgba(0, 102, 255, 0.2);
+}
+
+.watchlist-filters .filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 200px;
+  flex: 1;
+  max-width: 250px;
+}
+
+.watchlist-filters .filter-group label {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 0.95em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.watchlist-filters .filter-group label::before {
+  content: '';
+  width: 4px;
+  height: 16px;
+  background: linear-gradient(180deg, var(--primary), rgba(0, 102, 255, 0.5));
+  border-radius: 2px;
+}
+
+.watchlist-filters .filter-select {
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 1.05em;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.watchlist-filters .filter-select:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(0, 102, 255, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 102, 255, 0.3);
+}
+
+.watchlist-filters .filter-select:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.15);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(0, 102, 255, 0.3), 
+              0 6px 25px rgba(0, 102, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.watchlist-filters .filter-select option {
+  background: #1a1a1a;
+  color: #ffffff;
+}
+
+.watchlist-filters .filter-reset-btn {
+  padding: 14px 28px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Poppins', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.watchlist-filters .filter-reset-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.watchlist-filters .filter-reset-btn:hover::before {
+  left: 100%;
+}
+
+.watchlist-filters .filter-reset-btn:hover {
+  background: linear-gradient(135deg, rgba(0, 102, 255, 0.3) 0%, rgba(0, 102, 255, 0.2) 100%);
+  border-color: var(--primary);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 102, 255, 0.4);
+}
+
+.watchlist-filters .filter-reset-btn:active {
+  transform: translateY(-1px);
+}
+
+/* Sections Vu / À voir */
+.watchlist-section {
+  position: relative;
+  z-index: 3;
+  margin-bottom: 60px;
+  padding: 30px 0;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.watchlist-section-title {
+  color: #ffffff;
+  font-size: 2.2em;
+  font-weight: 700;
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  text-shadow: 0 3px 15px rgba(0, 0, 0, 0.9);
+  padding-bottom: 15px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+
+.watchlist-section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 80px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--primary), transparent);
+  border-radius: 2px;
+}
+
+.watchlist-section-title i {
+  color: var(--primary);
+  font-size: 1.3em;
+  text-shadow: 0 0 20px rgba(0, 102, 255, 0.6);
+  filter: drop-shadow(0 0 10px rgba(0, 102, 255, 0.4));
+}
+
+.watchlist-section-count {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.6em;
+  font-weight: 500;
+  margin-left: 8px;
+  background: rgba(0, 102, 255, 0.2);
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 102, 255, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+/* Indicateur de chargement */
+.watchlist-loading {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 20px;
+  min-height: 300px;
+}
+
+/* Note affichée sur les cartes */
+.watchlist-movie-score {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.95) 0%, rgba(255, 152, 0, 0.95) 100%);
+  color: #000000;
+  padding: 8px 14px;
+  border-radius: 25px;
+  font-size: 0.9em;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 5;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(255, 193, 7, 0.4),
+              0 0 20px rgba(255, 193, 7, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.watchlist-movie-card:hover .watchlist-movie-score {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(255, 193, 7, 0.6),
+              0 0 30px rgba(255, 193, 7, 0.3);
+}
+
+.watchlist-movie-score i {
+  color: #ffc107;
+  text-shadow: 0 0 10px rgba(255, 193, 7, 0.8);
+  filter: drop-shadow(0 0 5px rgba(255, 193, 7, 0.6));
+}
+
+/* Responsive pour watchlist page */
+@media (max-width: 991px) {
+  .watchlist-page-container {
+    padding: 100px 50px 60px;
+  }
+
+  .watchlist-page-title {
+    font-size: 2em;
+    margin-bottom: 40px;
+  }
+
+  .watchlist-hero-subtitle {
+    font-size: 1.1em;
+  }
+
+  .watchlist-filters {
+    padding: 25px;
+    gap: 15px;
+  }
+
+  .watchlist-filters .filter-group {
+    min-width: 150px;
+  }
+
+  .watchlist-section-title {
+    font-size: 1.6em;
+  }
+}
+
+@media (max-width: 991px) {
+  .watchlist-movies-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 20px;
+  }
+}
+
+@media (max-width: 600px) {
+  .watchlist-page-container {
+    padding: 90px 20px 50px;
+  }
+
+  .watchlist-page-title {
+    font-size: 1.8em;
+    margin-bottom: 15px;
+    letter-spacing: 2px;
+  }
+
+  .watchlist-hero-subtitle {
+    font-size: 1em;
+  }
+
+  .watchlist-filters {
+    padding: 22px;
+    gap: 15px;
+    flex-direction: column;
+    border-radius: 15px;
+  }
+
+  .watchlist-filters .filter-group {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+  }
+
+  .watchlist-section-title {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+    gap: 10px;
+  }
+
+  .watchlist-section-title i {
+    font-size: 1.1em;
+  }
+
+  .watchlist-movies-grid {
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 18px;
+  }
+
+  .movie-status-badge {
+    padding: 6px 12px;
+    font-size: 0.75em;
+    gap: 6px;
+  }
+
+  .watchlist-movie-score {
+    padding: 6px 12px;
+    font-size: 0.85em;
+  }
+}
+
+/* ==================== WATCHLIST EMPTY STATE ==================== */
+.watchlist-empty-container {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 50px;
+  margin-top: 40px;
+}
+
+.watchlist-empty-card {
+  position: relative;
+  max-width: 600px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px) saturate(120%);
+  -webkit-backdrop-filter: blur(20px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 60px 50px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.watchlist-empty-card:hover {
+  border-color: rgba(0, 102, 255, 0.3);
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 102, 255, 0.2);
+  transform: translateY(-5px);
+}
+
+.watchlist-empty-icon {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 102, 255, 0.15);
+  border: 2px solid rgba(0, 102, 255, 0.3);
+  border-radius: 50%;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.watchlist-empty-card:hover .watchlist-empty-icon {
+  background: rgba(0, 102, 255, 0.25);
+  border-color: rgba(0, 102, 255, 0.5);
+  transform: scale(1.05);
+  box-shadow: 0 10px 30px rgba(0, 102, 255, 0.3);
+}
+
+.watchlist-empty-icon i {
+  font-size: 4em;
+  color: var(--primary);
+  text-shadow: 0 0 20px rgba(0, 102, 255, 0.5);
+  filter: drop-shadow(0 0 10px rgba(0, 102, 255, 0.4));
+}
+
+.watchlist-empty-title {
+  font-size: 2.2em;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 20px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+}
+
+.watchlist-empty-message {
+  font-size: 1.1em;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 40px;
+  font-weight: 300;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.watchlist-empty-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 40px;
+  background: var(--primary);
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 1.1em;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 20px rgba(0, 102, 255, 0.3);
+  border: 2px solid transparent;
+}
+
+.watchlist-empty-btn:hover {
+  background: #0052d6;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0, 102, 255, 0.5);
+  border-color: rgba(0, 102, 255, 0.5);
+}
+
+.watchlist-empty-btn i {
+  font-size: 1.2em;
+}
+
+/* Styles pour les cartes de films dans la watchlist */
+.watchlist-movies-grid {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 24px;
+  margin-top: 40px;
+  padding: 0;
+  align-items: start; /* Aligne les cartes en haut */
+}
+
+.watchlist-movie-card {
+  position: relative;
+  height: 100%;
+  min-height: 360px; /* Hauteur minimale fixe */
+  display: flex;
+  flex-direction: column;
+}
+
+.watchlist-movie-card .movie-card {
+  height: 100%;
+  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+}
+
+.watchlist-movie-card .movie-card-poster {
+  position: relative;
+  overflow: hidden;
+  height: 240px; /* Hauteur fixe pour le poster */
+  flex-shrink: 0;
+}
+
+.watchlist-movie-card .movie-card-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.watchlist-movie-card .movie-card-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 80px;
+  max-height: 120px;
+}
+
+.watchlist-movie-card .movie-card-title {
+  min-height: 2.6em;
+  max-height: 2.6em;
+}
+
+.watchlist-movie-card .movie-card-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: auto;
+}
+
+.movie-card-status {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 4;
+}
+
+.movie-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 25px;
+  font-size: 0.8em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  backdrop-filter: blur(15px) saturate(180%);
+  -webkit-backdrop-filter: blur(15px) saturate(180%);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4),
+              0 0 20px rgba(0, 0, 0, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.movie-status-watched {
+  background: linear-gradient(135deg, rgba(40, 167, 69, 0.95) 0%, rgba(34, 139, 58, 0.95) 100%);
+  color: #ffffff;
+  border-color: rgba(40, 167, 69, 0.7);
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.5),
+              0 0 20px rgba(40, 167, 69, 0.3) !important;
+}
+
+.watchlist-movie-card:hover .movie-status-watched {
+  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.7),
+              0 0 30px rgba(40, 167, 69, 0.4) !important;
+}
+
+.movie-status-towatch {
+  background: linear-gradient(135deg, rgba(0, 102, 255, 0.95) 0%, rgba(0, 82, 214, 0.95) 100%);
+  color: #ffffff;
+  border-color: rgba(0, 102, 255, 0.7);
+  box-shadow: 0 4px 15px rgba(0, 102, 255, 0.5),
+              0 0 20px rgba(0, 102, 255, 0.3) !important;
+}
+
+.watchlist-movie-card:hover .movie-status-towatch {
+  box-shadow: 0 6px 20px rgba(0, 102, 255, 0.7),
+              0 0 30px rgba(0, 102, 255, 0.4) !important;
+}
+
+.movie-status-badge i {
+  font-size: 1em;
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+}
+
+
+/* Responsive pour watchlist empty */
+@media (max-width: 991px) {
+  .watchlist-empty-container {
+    padding: 60px 30px;
+    min-height: 50vh;
+  }
+
+  .watchlist-empty-card {
+    padding: 50px 40px;
+  }
+
+  .watchlist-empty-icon {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 25px;
+  }
+
+  .watchlist-empty-icon i {
+    font-size: 3.5em;
+  }
+
+  .watchlist-empty-title {
+    font-size: 1.8em;
+  }
+
+  .watchlist-empty-message {
+    font-size: 1em;
+    margin-bottom: 35px;
+  }
+
+  .watchlist-empty-btn {
+    padding: 14px 35px;
+    font-size: 1em;
+  }
+}
+
+@media (max-width: 600px) {
+  .watchlist-empty-container {
+    padding: 40px 20px;
+    min-height: 40vh;
+  }
+
+  .watchlist-empty-card {
+    padding: 40px 30px;
+    border-radius: 20px;
+  }
+
+  .watchlist-empty-icon {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 20px;
+  }
+
+  .watchlist-empty-icon i {
+    font-size: 2.5em;
+  }
+
+  .watchlist-empty-title {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+  }
+
+  .watchlist-empty-message {
+    font-size: 0.95em;
+    margin-bottom: 30px;
+    line-height: 1.6;
+  }
+
+  .watchlist-empty-btn {
+    padding: 12px 30px;
+    font-size: 0.95em;
+    gap: 10px;
+  }
 }

@@ -66,16 +66,37 @@ function mapHeadingToCategoryKey(heading) {
 function buildMovieCardHtml(movie) {
   const imgSrc = movie.image ? movie.image : "/static/images/movies/the-little-mermaid.jpeg";
   const detailUrl = movie.id ? `/movies/${movie.id}` : "#";
+  const movieId = movie.id || movie.tmdb_id || '';
+  const movieTitle = movie.title || "Titre";
+  const movieImage = movie.image || imgSrc;
+  const movieYear = movie.year || '';
+  const movieCategory = movie.category || 'Autre';
+  
   return `
-    <a class="movie-card-link" href="${detailUrl}">
-      <div class="movie-card">
-        <div class="movie-card-poster"><img src="${imgSrc}" alt="${movie.title || "Affiche"}"></div>
-        <div class="movie-card-info">
-          <h3 class="movie-card-title">${movie.title || "Titre"}</h3>
-          <p class="movie-card-meta">${movie.year || ""}${movie.duration ? ' • ' + movie.duration : ''}</p>
+    <div class="movie-card-wrapper">
+      <a class="movie-card-link" href="${detailUrl}">
+        <div class="movie-card">
+          <div class="movie-card-poster">
+            <img src="${imgSrc}" alt="${movieTitle}">
+            <button class="movie-card-add-btn js-watchlist-btn" 
+                    data-tmdb-id="${movieId}"
+                    data-title="${movieTitle}"
+                    data-image="${movieImage}"
+                    data-release-date="${movieYear ? movieYear + '-01-01' : ''}"
+                    data-runtime="${movie.duration || ''}"
+                    data-category="${movieCategory}"
+                    aria-label="Ajouter ${movieTitle} à ma liste"
+                    title="Ajouter à ma liste">
+              <i class="fa fa-plus" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div class="movie-card-info">
+            <h3 class="movie-card-title">${movieTitle}</h3>
+            <p class="movie-card-meta">${movieYear || ""}${movie.duration ? ' • ' + movie.duration : ''}</p>
+          </div>
         </div>
-      </div>
-    </a>`;
+      </a>
+    </div>`;
 }
 
 function buildCategoryCarouselHtml(movies) {
@@ -109,10 +130,32 @@ function attachCategoryCarouselEvents() {
 function loadMoviesByCategory() {
   const categorySections = document.querySelectorAll('.category');
   if (!categorySections.length) return;
+  
+  // Afficher un indicateur de chargement
+  categorySections.forEach((section) => {
+    const placeholder = section.querySelector('.category-content-placeholder');
+    if (placeholder) {
+      placeholder.innerHTML = '<div class="loading-spinner"><i class="fa fa-spinner fa-spin"></i> Chargement...</div>';
+    }
+  });
+  
   fetch('/movies/api/by-category')
-    .then((r) => r.json())
+    .then((r) => {
+      if (!r.ok) throw new Error('Erreur réseau');
+      return r.json();
+    })
     .then((data) => {
-      if (data.error) return;
+      if (data.error) {
+        console.error('Erreur API:', data.error);
+        categorySections.forEach((section) => {
+          const placeholder = section.querySelector('.category-content-placeholder');
+          if (placeholder) {
+            placeholder.innerHTML = '<p class="no-movies">Erreur de chargement.</p>';
+          }
+        });
+        return;
+      }
+      
       categorySections.forEach((section) => {
         const h2 = section.querySelector('h2');
         const placeholder = section.querySelector('.category-content-placeholder');
@@ -123,7 +166,15 @@ function loadMoviesByCategory() {
       });
       attachCategoryCarouselEvents();
     })
-    .catch((e) => console.error(e));
+    .catch((e) => {
+      console.error('Erreur lors du chargement des films:', e);
+      categorySections.forEach((section) => {
+        const placeholder = section.querySelector('.category-content-placeholder');
+        if (placeholder) {
+          placeholder.innerHTML = '<p class="no-movies">Erreur de chargement.</p>';
+        }
+      });
+    });
 }
 document.addEventListener('DOMContentLoaded', loadMoviesByCategory);
 
@@ -145,11 +196,13 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    // --- 1. BOUTON "+ MA LISTE" ---
+    // --- 1. BOUTON "+ MA LISTE" / "DANS MA LISTE" ---
     document.body.addEventListener('click', function(e) {
         const btn = e.target.closest('.js-watchlist-btn');
         if (btn) {
             e.preventDefault();
+            e.stopPropagation(); // Empêcher la navigation vers la page du film si c'est un bouton sur carte
+            
             const movieData = {
                 tmdb_id: btn.dataset.tmdbId,
                 title: btn.dataset.title,
@@ -158,21 +211,70 @@ document.addEventListener('DOMContentLoaded', function() {
                 runtime: btn.dataset.runtime,
                 category: btn.dataset.category
             };
-            fetch('/watchlist/add', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(movieData)
-            })
-            .then(r => r.status === 401 ? (window.location.href = "/auth/login") : r.json())
-            .then(d => {
-                if (d && d.success) {
-                    btn.innerHTML = '<i class="fa fa-check"></i> Ajouté';
-                    btn.style.opacity = '0.7';
-                    btn.style.pointerEvents = 'none';
-                } else {
-                    alert("Erreur: " + (d.message || "Impossible d'ajouter"));
-                }
-            });
+            
+            // Vérifier si le bouton est en mode "retirer" (déjà dans la liste)
+            const isRemove = btn.classList.contains('js-watchlist-remove');
+            const isCardBtn = btn.classList.contains('movie-card-add-btn');
+            
+            if (isRemove) {
+                // Retirer de la liste
+                fetch('/watchlist/remove', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(movieData)
+                })
+                .then(r => r.status === 401 ? (window.location.href = "/auth/login") : r.json())
+                .then(d => {
+                    if (d && d.success) {
+                        if (isCardBtn) {
+                            // Pour les boutons sur les cartes
+                            btn.classList.remove('added', 'js-watchlist-remove');
+                            btn.querySelector('i').className = 'fa fa-plus';
+                        } else {
+                            // Pour les boutons sur la page de détail
+                            btn.innerHTML = '<i class="fa fa-plus" aria-hidden="true"></i> Ma Liste';
+                            btn.classList.remove('js-watchlist-remove');
+                            btn.style.opacity = '1';
+                            btn.style.cursor = 'pointer';
+                        }
+                    } else {
+                        alert("Erreur: " + (d.message || "Impossible de retirer"));
+                    }
+                })
+                .catch(err => {
+                    console.error('Erreur lors de la suppression:', err);
+                    alert("Erreur lors de la suppression du film");
+                });
+            } else {
+                // Ajouter à la liste
+                fetch('/watchlist/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(movieData)
+                })
+                .then(r => r.status === 401 ? (window.location.href = "/auth/login") : r.json())
+                .then(d => {
+                    if (d && d.success) {
+                        if (isCardBtn) {
+                            // Pour les boutons sur les cartes
+                            btn.classList.add('added', 'js-watchlist-remove');
+                            btn.querySelector('i').className = 'fa fa-check';
+                        } else {
+                            // Pour les boutons sur la page de détail
+                            btn.innerHTML = '<i class="fa fa-check" aria-hidden="true"></i> Dans ma liste';
+                            btn.classList.add('js-watchlist-remove');
+                            btn.style.opacity = '1';
+                            btn.style.cursor = 'pointer';
+                        }
+                    } else {
+                        alert("Erreur: " + (d.message || "Impossible d'ajouter"));
+                    }
+                })
+                .catch(err => {
+                    console.error('Erreur lors de l\'ajout:', err);
+                    alert("Erreur lors de l'ajout du film");
+                });
+            }
         }
     });
 
@@ -275,6 +377,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!movieData) return;
 
                 movieData.score = newRating;
+                // Noter un film le marque automatiquement comme vu (géré côté serveur)
 
                 fetch('/watchlist/rate', {
                     method: 'POST',
@@ -283,21 +386,149 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .then(r => r.status === 401 ? (window.location.href = "/auth/login") : r.json())
                 .then(d => {
-                    if (d.success) {
+                    if (d && d.success) {
                         currentRating = newRating;
                         updateStarDisplay(starContainers, allStars, currentRating, false);
                         if (ratingValue) ratingValue.textContent = currentRating;
+                        if (ratingLabel) ratingLabel.textContent = ratingLabels[currentRating] || '';
                         
-                        // Marquer comme vu automatiquement si noté
+                        // Marquer comme vu automatiquement si noté (le film est maintenant marqué comme vu)
                         if (watchedBtn) {
                             watchedBtn.classList.add('watched');
                             watchedBtn.dataset.watched = "true";
                             watchedBtn.querySelector('i').className = 'fa fa-check-circle';
                             watchedBtn.querySelector('.watched-text').textContent = 'Vu';
                         }
+                        
+                        // Mettre à jour le bouton "Ma Liste" pour qu'il affiche "Dans ma liste"
+                        // (noter un film l'ajoute automatiquement à la watchlist)
+                        const watchlistBtn = document.querySelector('.js-watchlist-btn:not(.movie-card-add-btn)');
+                        if (watchlistBtn && !watchlistBtn.classList.contains('js-watchlist-remove')) {
+                            watchlistBtn.innerHTML = '<i class="fa fa-check" aria-hidden="true"></i> Dans ma liste';
+                            watchlistBtn.classList.add('js-watchlist-remove');
+                            watchlistBtn.style.opacity = '1';
+                            watchlistBtn.style.cursor = 'pointer';
+                        }
+                        
+                        // Mettre à jour les boutons sur les cartes de films si présents
+                        const cardBtns = document.querySelectorAll('.movie-card-add-btn[data-tmdb-id="' + movieData.tmdb_id + '"]');
+                        cardBtns.forEach(btn => {
+                            if (!btn.classList.contains('added')) {
+                                btn.classList.add('added', 'js-watchlist-remove');
+                                btn.querySelector('i').className = 'fa fa-check';
+                            }
+                        });
+                        
+                        // Si on est sur la page watchlist, recharger la liste pour mettre à jour les sections
+                        if (typeof loadFilteredWatchlist === 'function') {
+                            setTimeout(() => {
+                                loadFilteredWatchlist();
+                            }, 300);
+                        }
                     }
                 });
             });
+        });
+    }
+
+    // --- 4. GESTION DE LA CRITIQUE ---
+    const reviewTextarea = document.getElementById('review-textarea');
+    const saveReviewBtn = document.getElementById('save-review-btn');
+    const clearReviewBtn = document.getElementById('clear-review-btn');
+    const reviewStatus = document.getElementById('review-status');
+
+    if (saveReviewBtn && reviewTextarea) {
+        saveReviewBtn.addEventListener('click', function() {
+            const reviewText = reviewTextarea.value.trim();
+            const movieData = getMovieDataFromPage();
+            if (!movieData) return;
+
+            movieData.review = reviewText;
+
+            fetch('/watchlist/review', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(movieData)
+            })
+            .then(r => r.status === 401 ? (window.location.href = "/auth/login") : r.json())
+            .then(d => {
+                if (d && d.success) {
+                    reviewStatus.textContent = 'Critique publiée avec succès !';
+                    reviewStatus.className = 'review-status review-status-success';
+                    setTimeout(() => {
+                        reviewStatus.textContent = '';
+                        reviewStatus.className = 'review-status';
+                    }, 3000);
+                    
+                    // Afficher le bouton supprimer si la critique n'est pas vide
+                    if (reviewText && !clearReviewBtn) {
+                        // Le bouton sera ajouté dynamiquement si nécessaire
+                        location.reload(); // Recharger pour afficher le bouton supprimer
+                    }
+                } else {
+                    reviewStatus.textContent = 'Erreur lors de la publication';
+                    reviewStatus.className = 'review-status review-status-error';
+                    setTimeout(() => {
+                        reviewStatus.textContent = '';
+                        reviewStatus.className = 'review-status';
+                    }, 3000);
+                }
+            })
+            .catch(err => {
+                console.error('Erreur lors de la sauvegarde:', err);
+                reviewStatus.textContent = 'Erreur lors de la publication';
+                reviewStatus.className = 'review-status review-status-error';
+                setTimeout(() => {
+                    reviewStatus.textContent = '';
+                    reviewStatus.className = 'review-status';
+                }, 3000);
+            });
+        });
+    }
+
+    if (clearReviewBtn) {
+        clearReviewBtn.addEventListener('click', function() {
+            if (confirm('Êtes-vous sûr de vouloir supprimer votre critique ?')) {
+                const movieData = getMovieDataFromPage();
+                if (!movieData) return;
+
+                movieData.review = '';
+
+                fetch('/watchlist/review', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(movieData)
+                })
+                .then(r => r.status === 401 ? (window.location.href = "/auth/login") : r.json())
+                .then(d => {
+                    if (d && d.success) {
+                        reviewTextarea.value = '';
+                        reviewStatus.textContent = 'Critique supprimée';
+                        reviewStatus.className = 'review-status review-status-success';
+                        setTimeout(() => {
+                            reviewStatus.textContent = '';
+                            reviewStatus.className = 'review-status';
+                            location.reload(); // Recharger pour masquer le bouton supprimer
+                        }, 1500);
+                    } else {
+                        reviewStatus.textContent = 'Erreur lors de la suppression';
+                        reviewStatus.className = 'review-status review-status-error';
+                        setTimeout(() => {
+                            reviewStatus.textContent = '';
+                            reviewStatus.className = 'review-status';
+                        }, 3000);
+                    }
+                })
+                .catch(err => {
+                    console.error('Erreur lors de la suppression:', err);
+                    reviewStatus.textContent = 'Erreur lors de la suppression';
+                    reviewStatus.className = 'review-status review-status-error';
+                    setTimeout(() => {
+                        reviewStatus.textContent = '';
+                        reviewStatus.className = 'review-status';
+                    }, 3000);
+                });
+            }
         });
     }
 });
