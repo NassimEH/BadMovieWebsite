@@ -1039,10 +1039,10 @@ header {
 .category-carousel-track {
   flex: 1;
   display: flex;
-  gap: 16px;
+  gap: 20px;
   overflow-x: auto;
   scroll-behavior: smooth;
-  padding: 10px 5px 20px;
+  padding: 5px 0;
 }
 
 .category-carousel-track::-webkit-scrollbar {
@@ -1095,40 +1095,72 @@ header {
 /* Cartes film dans le carousel */
 .category-carousel-track .movie-card-wrapper {
   flex-shrink: 0;
-  width: 180px; /* Largeur fixe pour les cartes dans le carousel */
+  width: 180px;
+  min-width: 180px;
+  max-width: 180px;
+  margin: 0;
+  padding: 0;
+}
+
+.category-carousel-track .movie-card-link {
+  width: 100%;
+  display: block;
 }
 
 .category-carousel-track .movie-card {
-  height: 360px; /* Hauteur fixe pour toutes les cartes */
+  width: 100%;
+  height: 360px;
   min-height: 360px;
+  max-height: 360px;
+  min-width: 180px;
+  max-width: 180px;
   display: flex;
   flex-direction: column;
+  margin: 0;
+  box-sizing: border-box;
 }
 
 .category-carousel-track .movie-card-poster {
-  height: 240px; /* Hauteur fixe pour le poster */
+  width: 100%;
+  height: 240px;
+  min-height: 240px;
+  max-height: 240px;
   flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
 }
 
 .category-carousel-track .movie-card-info {
+  width: 100%;
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   min-height: 80px;
   max-height: 120px;
+  padding: 12px 14px 14px;
+  box-sizing: border-box;
 }
 
 .category-carousel-track .movie-card-title {
+  width: 100%;
   min-height: 2.6em;
   max-height: 2.6em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  margin: 0 0 6px 0;
 }
 
 .category-carousel-track .movie-card-meta {
+  width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   margin-top: auto;
+  margin-bottom: 0;
 }
 
 .movie-card-wrapper {

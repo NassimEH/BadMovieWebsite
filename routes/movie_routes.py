@@ -477,7 +477,9 @@ def api_coming_soon():
             return jsonify({"error": "TMDB_API_KEY manquante dans l'environnement"}), 500
 
         base_url = "https://api.themoviedb.org/3/discover/movie"
-        grouped = {}
+        years = [2026, 2027, 2028, 2029, 2030]
+        # Initialiser toutes les années avec des listes vides
+        grouped = {str(year): [] for year in years}
 
         def fetch_year_movies(year):
             """Fonction pour récupérer les films d'une année spécifique."""
@@ -489,10 +491,11 @@ def api_coming_soon():
                 "primary_release_date.gte": f"{year}-01-01",
                 "primary_release_date.lte": f"{year}-12-31",
                 "page": 1,
+                "with_poster": True,
             }
 
             try:
-                response = requests.get(base_url, params=params, timeout=5)
+                response = requests.get(base_url, params=params, timeout=10)
                 response.raise_for_status()
                 data = response.json()
                 movies = data.get("results", [])
@@ -569,7 +572,6 @@ def api_coming_soon():
                 return year, []
 
         # Exécution parallèle des requêtes pour les années 2026-2030
-        years = [2026, 2027, 2028, 2029, 2030]
         with ThreadPoolExecutor(max_workers=5) as executor:
             future_to_year = {
                 executor.submit(fetch_year_movies, year): year 
@@ -578,8 +580,17 @@ def api_coming_soon():
             
             # Récupérer les résultats au fur et à mesure
             for future in as_completed(future_to_year):
-                year, movies = future.result()
-                grouped[str(year)] = movies
+                try:
+                    year, movies = future.result()
+                    grouped[str(year)] = movies
+                except Exception as e:
+                    logger.error(f"Erreur lors de la récupération du résultat pour une année: {str(e)}")
+                    # L'année reste avec une liste vide (déjà initialisée)
+
+        # S'assurer que toutes les années sont présentes dans la réponse
+        for year in years:
+            if str(year) not in grouped:
+                grouped[str(year)] = []
 
         return jsonify(grouped)
     except Exception as e:

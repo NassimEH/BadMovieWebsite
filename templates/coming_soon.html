@@ -160,9 +160,15 @@
     });
   }
 
-  function loadComingSoonMovies() {
+  function loadComingSoonMovies(retryCount = 0) {
     const categorySections = document.querySelectorAll('.category');
-    if (!categorySections.length) return;
+    if (!categorySections.length) {
+      // Réessayer après un court délai si le DOM n'est pas prêt
+      if (retryCount < 3) {
+        setTimeout(() => loadComingSoonMovies(retryCount + 1), 100);
+      }
+      return;
+    }
     
     // Afficher un indicateur de chargement
     categorySections.forEach((section) => {
@@ -172,9 +178,17 @@
       }
     });
     
-    fetch('/movies/api/coming-soon')
+    fetch('/movies/api/coming-soon', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-cache'
+    })
       .then((r) => {
-        if (!r.ok) throw new Error('Erreur réseau');
+        if (!r.ok) {
+          throw new Error(`Erreur HTTP: ${r.status}`);
+        }
         return r.json();
       })
       .then((data) => {
@@ -183,12 +197,19 @@
           categorySections.forEach((section) => {
             const placeholder = section.querySelector('.category-content-placeholder');
             if (placeholder) {
-              placeholder.innerHTML = '<p class="no-movies">Erreur de chargement.</p>';
+              placeholder.innerHTML = '<p class="no-movies">Erreur de chargement. Veuillez réessayer.</p>';
             }
           });
           return;
         }
         
+        // Vérifier que data est un objet valide
+        if (!data || typeof data !== 'object') {
+          console.error('Données invalides reçues:', data);
+          throw new Error('Format de données invalide');
+        }
+        
+        let hasMovies = false;
         categorySections.forEach((section) => {
           const h2 = section.querySelector('h2');
           const placeholder = section.querySelector('.category-content-placeholder');
@@ -199,25 +220,50 @@
           if (!yearMatch) return;
           
           const year = yearMatch[0];
-          const movies = data[year] || [];
+          const movies = data[year];
           
-          placeholder.innerHTML = movies.length ? buildCategoryCarouselHtml(movies) : '<p class="no-movies">Aucun film disponible pour le moment.</p>';
+          // Vérifier que movies est un tableau
+          if (Array.isArray(movies) && movies.length > 0) {
+            hasMovies = true;
+            placeholder.innerHTML = buildCategoryCarouselHtml(movies);
+          } else {
+            placeholder.innerHTML = '<p class="no-movies">Aucun film disponible pour le moment.</p>';
+          }
         });
         
-        attachCategoryCarouselEvents();
+        if (hasMovies) {
+          attachCategoryCarouselEvents();
+        }
       })
       .catch((e) => {
         console.error('Erreur lors du chargement des films à venir:', e);
-        categorySections.forEach((section) => {
-          const placeholder = section.querySelector('.category-content-placeholder');
-          if (placeholder) {
-            placeholder.innerHTML = '<p class="no-movies">Erreur de chargement.</p>';
-          }
-        });
+        
+        // Retry mechanism - réessayer jusqu'à 2 fois
+        if (retryCount < 2) {
+          console.log(`Tentative de rechargement (${retryCount + 1}/2)...`);
+          setTimeout(() => {
+            loadComingSoonMovies(retryCount + 1);
+          }, 2000);
+        } else {
+          categorySections.forEach((section) => {
+            const placeholder = section.querySelector('.category-content-placeholder');
+            if (placeholder) {
+              placeholder.innerHTML = '<p class="no-movies">Erreur de chargement. Veuillez actualiser la page.</p>';
+            }
+          });
+        }
       });
   }
 
-  document.addEventListener('DOMContentLoaded', loadComingSoonMovies);
+  // Attendre que le DOM soit complètement chargé
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => loadComingSoonMovies(), 100);
+    });
+  } else {
+    // DOM déjà chargé
+    setTimeout(() => loadComingSoonMovies(), 100);
+  }
 </script>
 {% endblock %}
 
