@@ -143,7 +143,8 @@
     if (movie.category) metaParts.push(movie.category);
     const meta = metaParts.join(' • ');
     
-    const scoreDisplay = movie.score !== null && movie.score !== undefined 
+    // Afficher la note uniquement si le film est vu (les films à voir ne doivent pas avoir de note affichée)
+    const scoreDisplay = movie.watched && movie.score !== null && movie.score !== undefined && movie.score > 0
       ? `<div class="watchlist-movie-score">
            <i class="fa fa-star" aria-hidden="true"></i> ${movie.score}/5
          </div>` 
