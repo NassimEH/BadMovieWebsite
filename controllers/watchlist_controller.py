@@ -53,7 +53,7 @@ class WatchlistController:
             db.session.add(film)
             db.session.commit()
         else:
-            # Si le film existe mais n'a pas d'image, on la met à jour
+            # Si le film existe, mettre à jour l'image si une nouvelle image valide est fournie
             image_url = movie_data.get('image', '')
             if image_url and not image_url.startswith('http'):
                 # Si l'URL n'est pas complète, on essaie de la compléter
@@ -62,13 +62,11 @@ class WatchlistController:
                 elif not image_url.startswith('https://'):
                     image_url = 'https://image.tmdb.org/t/p/w500' + image_url
             
-            if not film.image and image_url:
+            # Toujours mettre à jour l'image si une image valide est fournie
+            if image_url and image_url.strip():
                 film.image = image_url
                 db.session.commit()
-            elif film.image != image_url and image_url:
-                # Met à jour l'image même si elle existe déjà (au cas où elle serait meilleure)
-                film.image = image_url
-                db.session.commit()
+            
             # Met à jour aussi le titre si nécessaire
             if movie_data.get('title') and film.name_movie == 'Inconnu':
                 film.name_movie = movie_data.get('title')

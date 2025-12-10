@@ -94,10 +94,14 @@ def remove_from_watchlist():
 @login_required
 def get_filtered_watchlist():
     """API pour récupérer la watchlist filtrée et triée."""
+    from models import Commentaire, Film
+    from sqlalchemy.orm import joinedload
+    
     filter_status = request.args.get('status', 'all')  # 'all', 'watched', 'towatch'
     sort_by = request.args.get('sort', 'date')  # 'date', 'rating-asc', 'rating-desc', 'title-asc', 'title-desc'
     
-    watchlist = WatchlistController.get_user_watchlist(current_user.ID_user)
+    # Charger les commentaires avec les films en une seule requête
+    watchlist = Commentaire.query.options(joinedload(Commentaire.film)).filter_by(ID_user=current_user.ID_user).all()
     
     # Filtrer par statut
     filtered = []
@@ -137,11 +141,43 @@ def get_filtered_watchlist():
             else:
                 duration = str(item.film.duration)
         
+        # Récupérer l'image du film, s'assurer qu'elle n'est pas vide
+        # Si l'image est vide ou semble être l'image par défaut, essayer de la récupérer depuis TMDB
+        film_image = item.film.image if item.film.image and item.film.image.strip() else ""
+        
+        # Si l'image est vide ou semble être l'image par défaut de Little Mermaid, récupérer depuis TMDB
+        if not film_image or 'the-little-mermaid' in film_image.lower():
+            try:
+                import os
+                import requests
+                from flask import current_app
+                
+                api_key = os.getenv("API_key") or current_app.config.get("TMDB_API_KEY")
+                if api_key:
+                    tmdb_id = item.film.ID_film
+                    response = requests.get(
+                        f"https://api.themoviedb.org/3/movie/{tmdb_id}",
+                        params={"api_key": api_key, "language": "fr-FR"},
+                        timeout=3
+                    )
+                    if response.status_code == 200:
+                        movie_data = response.json()
+                        poster_path = movie_data.get("poster_path")
+                        if poster_path:
+                            film_image = f"https://image.tmdb.org/t/p/w500{poster_path}"
+                            # Mettre à jour l'image en base de données
+                            item.film.image = film_image
+                            from extensions import db
+                            db.session.commit()
+            except Exception:
+                # En cas d'erreur, garder l'image vide
+                pass
+        
         formatted.append({
             "id": item.film.ID_film,
             "tmdb_id": item.film.ID_film,
             "title": item.film.name_movie,
-            "image": item.film.image or "",
+            "image": film_image,
             "year": year,
             "duration": duration,
             "category": item.film.category or "",
