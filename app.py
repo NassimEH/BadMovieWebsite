@@ -42,4 +42,5 @@ def index():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()  # Création des tables si elles n'existent pas
-    app.run(debug=True)
+    # Écouter sur 0.0.0.0 pour permettre les connexions externes (Docker)
+    app.run(host='0.0.0.0', port=5000, debug=True)

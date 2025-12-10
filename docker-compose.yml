@@ -1,0 +1,24 @@
+services:
+  web:
+    build: .
+    container_name: badmovie_app
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./instance:/app/instance
+      - ./static:/app/static
+      - ./templates:/app/templates
+      - ./routes:/app/routes
+      - ./controllers:/app/controllers
+    env_file:
+      - .env
+    environment:
+      - FLASK_APP=app.py
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    networks:
+      - badmovie-network
+
+networks:
+  badmovie-network:
+    driver: bridge
