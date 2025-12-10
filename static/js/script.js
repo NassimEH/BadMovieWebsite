@@ -59,12 +59,11 @@ window.changeBg = function(bg, title) {
     moviesHero.style.backgroundPosition = 'center top';
   }
   
-  // Fond d'image retiré pour watchlist-hero
-  // if (watchlistHero) {
-  //   watchlistHero.style.background = `url("/static/images/movies/${bg}")`;
-  //   watchlistHero.style.backgroundSize = 'cover';
-  //   watchlistHero.style.backgroundPosition = 'center top';
-  // }
+  if (watchlistHero) {
+    watchlistHero.style.backgroundImage = `url("/static/images/movies/${bg}")`;
+    watchlistHero.style.backgroundSize = 'cover';
+    watchlistHero.style.backgroundPosition = 'center top';
+  }
   
   // Sauvegarder la préférence
   localStorage.setItem('badmovie_background', JSON.stringify({ bg, title }));
@@ -204,6 +203,35 @@ document.addEventListener('DOMContentLoaded', loadMoviesByCategory);
 
 
 /* --- GESTION DES INTERACTIONS UTILISATEUR (AJOUT, VU, NOTE) --- */
+// Fonction pour afficher un message d'erreur esthétique pour les films à venir
+function showFutureMovieError(message) {
+    // Créer ou réutiliser un élément de notification
+    let notification = document.getElementById('future-movie-notification');
+    if (!notification) {
+        notification = document.createElement('div');
+        notification.id = 'future-movie-notification';
+        notification.className = 'future-movie-notification';
+        document.body.appendChild(notification);
+    }
+    
+    notification.innerHTML = `
+        <div class="future-movie-notification-content">
+            <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    notification.classList.add('show');
+    
+    // Masquer après 4 secondes
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            notification.innerHTML = '';
+        }, 300);
+    }, 4000);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
 
     // --- Fonction utilitaire : Récupérer les données du film ---
@@ -306,6 +334,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const watchedBtn = document.getElementById('watched-btn');
     if (watchedBtn && !watchedBtn.disabled) {
         watchedBtn.addEventListener('click', function() {
+            // Vérifier si le film est à venir (>= 2026)
+            const releaseYear = parseInt(this.dataset.releaseYear) || 0;
+            if (releaseYear >= 2026) {
+                showFutureMovieError('Vous ne pouvez pas marquer un film non encore sorti comme vu.');
+                return;
+            }
+            
             const isWatched = this.dataset.watched === 'true';
             const newState = !isWatched;
             const movieData = getMovieDataFromPage();
@@ -336,7 +371,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             window.resetStarRating(0);
                         }
                     }
+                } else if (d.message) {
+                    showFutureMovieError(d.message);
                 }
+            })
+            .catch(err => {
+                console.error('Erreur:', err);
             });
         });
     }
@@ -409,6 +449,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Gestion du clic (Envoi BDD)
         allStars.forEach(star => {
             star.addEventListener('click', function() {
+                // Vérifier si le film est à venir (>= 2026)
+                const releaseYear = parseInt(starRating.dataset.releaseYear) || 0;
+                if (releaseYear >= 2026) {
+                    showFutureMovieError('Vous ne pouvez pas noter un film non encore sorti.');
+                    return;
+                }
+                
                 const newRating = parseFloat(this.dataset.rating);
                 const movieData = getMovieDataFromPage();
                 
@@ -463,7 +510,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                 loadFilteredWatchlist();
                             }, 300);
                         }
+                    } else if (d && d.message) {
+                        showFutureMovieError(d.message);
                     }
+                })
+                .catch(err => {
+                    console.error('Erreur:', err);
                 });
             });
         });
@@ -477,6 +529,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (saveReviewBtn && reviewTextarea) {
         saveReviewBtn.addEventListener('click', function() {
+            // Vérifier si le film est à venir (>= 2026)
+            const releaseYear = parseInt(reviewTextarea.dataset.releaseYear) || 0;
+            if (releaseYear >= 2026) {
+                showFutureMovieError('Vous ne pouvez pas ajouter une critique pour un film non encore sorti.');
+                return;
+            }
+            
             const reviewText = reviewTextarea.value.trim();
             const movieData = getMovieDataFromPage();
             if (!movieData) return;
@@ -504,7 +563,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         location.reload(); // Recharger pour afficher le bouton supprimer
                     }
                 } else {
-                    reviewStatus.textContent = 'Erreur lors de la publication';
+                    const errorMsg = d.message || 'Erreur lors de la publication';
+                    reviewStatus.textContent = errorMsg;
                     reviewStatus.className = 'review-status review-status-error';
                     setTimeout(() => {
                         reviewStatus.textContent = '';

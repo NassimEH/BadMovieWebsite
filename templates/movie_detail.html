@@ -37,6 +37,9 @@
     </div>
   </header>
   
+  {% set release_year = movie.release_date[:4]|int if movie.release_date else 0 %}
+  {% set is_future_movie = release_year >= 2026 %}
+  
   <div class="movie-detail-hero" {% if backdrop_url %}style="background-image: url('{{ backdrop_url }}');"{% endif %}>
     <div class="movie-detail-overlay"></div>
 
@@ -58,26 +61,31 @@
             <p><a href="{{ url_for('auth.login') }}">Connectez-vous</a> pour gérer votre liste</p>
           </div>
           {% endif %}
-
+          
           <div class="movie-watched-toggle">
             <button type="button" id="watched-btn" 
-                    class="watched-btn {% if interaction and interaction.watched %}watched{% endif %}" 
+                    class="watched-btn {% if interaction and interaction.watched %}watched{% endif %} {% if is_future_movie %}disabled-future{% endif %}" 
                     data-watched="{{ 'true' if interaction and interaction.watched else 'false' }}"
-                    {% if not current_user.is_authenticated %}disabled{% endif %}>
+                    data-release-year="{{ release_year }}"
+                    {% if not current_user.is_authenticated or is_future_movie %}disabled{% endif %}>
               <i class="fa {% if interaction and interaction.watched %}fa-check-circle{% else %}fa-eye{% endif %}" aria-hidden="true"></i>
               <span class="watched-text">
                 {% if interaction and interaction.watched %}Vu{% else %}Marquer comme vu{% endif %}
               </span>
             </button>
+            {% if is_future_movie %}
+            <p class="future-movie-message">Ce film n'est pas encore sorti</p>
+            {% endif %}
           </div>
 
           <div class="movie-rating-section">
             <h3 class="movie-detail-section-title">Ma note</h3>
             
             <div class="star-rating-wrapper">
-              <div class="star-rating" 
+              <div class="star-rating {% if is_future_movie %}disabled-future{% endif %}" 
                    data-current-score="{{ interaction.score_user if interaction and interaction.score_user else 0 }}"
-                   {% if not current_user.is_authenticated %}data-disabled="true"{% endif %}>
+                   data-release-year="{{ release_year }}"
+                   {% if not current_user.is_authenticated or is_future_movie %}data-disabled="true"{% endif %}>
                 
                 {% for i in range(1, 6) %}
                 <div class="star-container" data-rating="{{ i }}">
@@ -97,6 +105,9 @@
               <span class="rating-max">/ 5</span>
             </div>
             <div class="rating-label"></div>
+            {% if is_future_movie %}
+            <p class="future-movie-message">Ce film n'est pas encore sorti</p>
+            {% endif %}
           </div>
 
           <div class="movie-review-section">
@@ -110,11 +121,16 @@
             <div class="review-form-container">
               <textarea 
                 id="review-textarea" 
-                class="review-textarea" 
+                class="review-textarea {% if is_future_movie %}disabled-future{% endif %}" 
                 placeholder="Partagez votre avis sur ce film..."
-                rows="5">{{ interaction.avis_user if interaction and interaction.avis_user else '' }}</textarea>
+                rows="5"
+                data-release-year="{{ release_year }}"
+                {% if is_future_movie %}disabled{% endif %}>{{ interaction.avis_user if interaction and interaction.avis_user else '' }}</textarea>
               <div class="review-actions">
-                <button type="button" id="save-review-btn" class="review-btn review-btn-primary">
+                <button type="button" id="save-review-btn" 
+                        class="review-btn review-btn-primary {% if is_future_movie %}disabled-future{% endif %}"
+                        data-release-year="{{ release_year }}"
+                        {% if is_future_movie %}disabled{% endif %}>
                   <i class="fa fa-save" aria-hidden="true"></i> Publier
                 </button>
                 {% if interaction and interaction.avis_user %}
@@ -124,6 +140,9 @@
                 {% endif %}
               </div>
               <div id="review-status" class="review-status"></div>
+              {% if is_future_movie %}
+              <p class="future-movie-message">Ce film n'est pas encore sorti</p>
+              {% endif %}
             </div>
             {% endif %}
           </div>
@@ -146,7 +165,7 @@
         {% endif %}
 
         <div class="movie-detail-actions">
-          <a href="#" class="primary-btn"><i class="fa fa-play" aria-hidden="true"></i> Regarder</a>
+          <a href="#" class="primary-btn {% if is_future_movie %}disabled-future{% endif %}" {% if is_future_movie %}onclick="return false;" style="pointer-events: none;"{% endif %}><i class="fa fa-play" aria-hidden="true"></i> Regarder</a>
           
           {% if interaction %}
             <a href="javascript:void(0)" 

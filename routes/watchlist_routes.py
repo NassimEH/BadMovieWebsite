@@ -27,6 +27,19 @@ def add_to_watchlist():
 @login_required
 def set_watched():
     data = request.get_json()
+    # Vérifier si le film est à partir de 2026
+    release_date = data.get('release_date', '')
+    if release_date:
+        try:
+            release_year = int(release_date[:4])
+            if release_year >= 2026:
+                return jsonify({
+                    "success": False,
+                    "message": "Vous ne pouvez pas marquer un film non encore sorti comme vu."
+                }), 400
+        except (ValueError, TypeError):
+            pass
+    
     # data contient les infos du film + 'watched' (true/false)
     status = data.get('watched', False)
     success = WatchlistController.update_watched(current_user.ID_user, data, status)
@@ -36,6 +49,19 @@ def set_watched():
 @login_required
 def rate_movie():
     data = request.get_json()
+    # Vérifier si le film est à partir de 2026
+    release_date = data.get('release_date', '')
+    if release_date:
+        try:
+            release_year = int(release_date[:4])
+            if release_year >= 2026:
+                return jsonify({
+                    "success": False,
+                    "message": "Vous ne pouvez pas noter un film non encore sorti."
+                }), 400
+        except (ValueError, TypeError):
+            pass
+    
     # data contient les infos du film + 'score' (int)
     score = data.get('score')
     success = WatchlistController.update_score(current_user.ID_user, data, score)
@@ -65,6 +91,20 @@ def rate_movie():
 def save_review():
     """API pour sauvegarder une critique."""
     data = request.get_json()
+    
+    # Vérifier si le film est à partir de 2026
+    release_date = data.get('release_date', '')
+    if release_date:
+        try:
+            release_year = int(release_date[:4])
+            if release_year >= 2026:
+                return jsonify({
+                    "success": False,
+                    "message": "Vous ne pouvez pas ajouter une critique pour un film non encore sorti."
+                }), 400
+        except (ValueError, TypeError):
+            pass
+    
     review_text = data.get('review', '').strip()
     
     # Si la critique est vide, on la supprime

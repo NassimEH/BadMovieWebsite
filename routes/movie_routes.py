@@ -515,116 +515,171 @@ def api_coming_soon():
             logger.error("TMDB_API_KEY manquante dans l'environnement")
             return jsonify({"error": "TMDB_API_KEY manquante dans l'environnement"}), 500
 
+        from datetime import datetime, timedelta
+        
         base_url = "https://api.themoviedb.org/3/discover/movie"
         years = [2026, 2027, 2028, 2029, 2030]
         # Initialiser toutes les années avec des listes vides
         grouped = {str(year): [] for year in years}
+        
+        # Date d'aujourd'hui pour récupérer les films à venir
+        today = datetime.now().strftime("%Y-%m-%d")
+        # Date maximale (fin 2030)
+        max_date = "2030-12-31"
 
-        def fetch_year_movies(year):
-            """Fonction pour récupérer les films d'une année spécifique."""
-            params = {
-                "api_key": api_key,
-                "language": "fr-FR",
-                "sort_by": "popularity.desc",
-                "primary_release_year": year,
-                "primary_release_date.gte": f"{year}-01-01",
-                "primary_release_date.lte": f"{year}-12-31",
-                "page": 1,
-                "with_poster": True,
-            }
-
-            try:
-                response = requests.get(base_url, params=params, timeout=10)
-                response.raise_for_status()
-                data = response.json()
-                movies = data.get("results", [])
-                
-                year_movies = []
-                for movie in movies[:20]:  # Limiter à 20 films par année
-                    try:
-                        poster_path = movie.get("poster_path")
-                        # Ignorer les films sans affiche
-                        if not poster_path:
-                            continue
-                        
-                        release_date = movie.get("release_date") or ""
-                        year_movie = release_date.split("-")[0] if release_date else None
-
-                        # Construire l'URL de l'image
-                        image_url = None
-                        if poster_path:
-                            if poster_path.startswith("http"):
-                                image_url = poster_path
-                            elif poster_path.startswith("/"):
-                                image_url = f"https://image.tmdb.org/t/p/w500{poster_path}"
-                            else:
-                                image_url = f"https://image.tmdb.org/t/p/w500/{poster_path}"
-                        
-                        # Récupérer les genres
-                        genre_names = []
-                        if movie.get("genre_ids"):
-                            genre_id_to_name = {
-                                28: "Action", 27: "Horreur", 14: "Fantastique", 878: "Science-Fiction",
-                                18: "Drame", 35: "Comédie", 53: "Thriller", 10752: "Guerre",
-                                10749: "Romance", 16: "Animation", 99: "Documentaire", 36: "Biographie"
-                            }
-                            genre_names = [genre_id_to_name.get(gid, "") for gid in movie.get("genre_ids", [])[:2] if genre_id_to_name.get(gid)]
-                        
-                        runtime = movie.get("runtime")
-                        duration_str = None
-                        if runtime:
-                            hours = runtime // 60
-                            minutes = runtime % 60
-                            if hours > 0:
-                                duration_str = f"{hours}h{minutes:02d}min"
-                            else:
-                                duration_str = f"{minutes}min"
-
-                        year_movies.append({
-                            "id": movie.get("id"),
-                            "tmdb_id": movie.get("id"),
-                            "title": movie.get("title") or movie.get("name") or "Titre inconnu",
-                            "image": image_url,
-                            "year": year_movie,
-                            "release_date": release_date,
-                            "duration": duration_str,
-                            "runtime": runtime,
-                            "category": ", ".join(genre_names) if genre_names else "Autre",
-                            "vote_average": movie.get("vote_average", 0),
-                        })
-                    except Exception as e:
-                        logger.warning(f"Erreur lors du traitement d'un film pour {year}: {str(e)}")
-                        continue
-                
-                return year, year_movies
-            except requests.exceptions.Timeout:
-                logger.warning(f"Timeout lors de la récupération des films pour {year}")
-                return year, []
-            except requests.exceptions.HTTPError as e:
-                logger.error(f"Erreur HTTP pour {year}: {e.response.status_code}")
-                return year, []
-            except requests.RequestException as e:
-                logger.error(f"Erreur de requête pour {year}: {str(e)}")
-                return year, []
-            except Exception as e:
-                logger.error(f"Erreur inattendue pour {year}: {str(e)}")
-                return year, []
-
-        # Exécution parallèle des requêtes pour les années 2026-2030
-        with ThreadPoolExecutor(max_workers=5) as executor:
-            future_to_year = {
-                executor.submit(fetch_year_movies, year): year 
-                for year in years
-            }
+        def fetch_future_movies():
+            """Fonction pour récupérer tous les films à venir."""
+            all_movies = []
+            page = 1
+            max_pages = 15  # Réduire à 15 pages pour accélérer le chargement initial
             
-            # Récupérer les résultats au fur et à mesure
-            for future in as_completed(future_to_year):
+            # Objectif : avoir au moins 5 films par année avant de s'arrêter
+            min_films_per_year = 5
+            
+            while page <= max_pages:
+                params = {
+                    "api_key": api_key,
+                    "language": "fr-FR",
+                    "sort_by": "popularity.desc",
+                    "primary_release_date.gte": today,
+                    "primary_release_date.lte": max_date,
+                    "page": page,
+                    "with_poster": True,
+                }
+
                 try:
-                    year, movies = future.result()
-                    grouped[str(year)] = movies
+                    response = requests.get(base_url, params=params, timeout=10)
+                    response.raise_for_status()
+                    data = response.json()
+                    movies = data.get("results", [])
+                    
+                    if not movies:
+                        break
+                    
+                    all_movies.extend(movies)
+                    
+                    # Vérifier si on a assez de films pour chaque année
+                    # (vérification rapide avant de continuer)
+                    if len(all_movies) >= 100:  # Si on a déjà beaucoup de films, vérifier
+                        temp_grouped = {}
+                        for movie in all_movies:
+                            release_date = movie.get("release_date", "")
+                            if release_date:
+                                try:
+                                    year = int(release_date.split("-")[0])
+                                    if year in years:
+                                        if str(year) not in temp_grouped:
+                                            temp_grouped[str(year)] = 0
+                                        temp_grouped[str(year)] += 1
+                                except:
+                                    pass
+                        
+                        # Si toutes les années ont au moins min_films_per_year films, on peut arrêter
+                        years_with_films = [y for y in years if str(y) in temp_grouped and temp_grouped[str(y)] >= min_films_per_year]
+                        if len(years_with_films) == len(years):
+                            break
+                    
+                    # Si on a atteint la dernière page, arrêter
+                    total_pages = data.get("total_pages", 1)
+                    if page >= total_pages:
+                        break
+                    
+                    page += 1
+                except requests.exceptions.Timeout:
+                    logger.warning(f"Timeout lors de la récupération de la page {page}")
+                    break
+                except requests.exceptions.HTTPError as e:
+                    logger.error(f"Erreur HTTP pour la page {page}: {e.response.status_code}")
+                    break
+                except requests.RequestException as e:
+                    logger.error(f"Erreur de requête pour la page {page}: {str(e)}")
+                    break
                 except Exception as e:
-                    logger.error(f"Erreur lors de la récupération du résultat pour une année: {str(e)}")
-                    # L'année reste avec une liste vide (déjà initialisée)
+                    logger.error(f"Erreur inattendue pour la page {page}: {str(e)}")
+                    break
+            
+            return all_movies
+
+        try:
+            movies = fetch_future_movies()
+            
+            # Traiter tous les films et les grouper par année (sans limite pendant le traitement)
+            for movie in movies:
+                try:
+                    poster_path = movie.get("poster_path")
+                    # Ignorer les films sans affiche
+                    if not poster_path:
+                        continue
+                    
+                    release_date = movie.get("release_date") or ""
+                    if not release_date:
+                        continue
+                    
+                    # Extraire l'année de la date de sortie
+                    try:
+                        year_movie = int(release_date.split("-")[0])
+                    except (ValueError, IndexError):
+                        continue
+                    
+                    # Ne garder que les années qui nous intéressent (2026-2030)
+                    if year_movie not in years:
+                        continue
+
+                    # Construire l'URL de l'image
+                    image_url = None
+                    if poster_path:
+                        if poster_path.startswith("http"):
+                            image_url = poster_path
+                        elif poster_path.startswith("/"):
+                            image_url = f"https://image.tmdb.org/t/p/w500{poster_path}"
+                        else:
+                            image_url = f"https://image.tmdb.org/t/p/w500/{poster_path}"
+                    
+                    # Récupérer les genres
+                    genre_names = []
+                    if movie.get("genre_ids"):
+                        genre_id_to_name = {
+                            28: "Action", 27: "Horreur", 14: "Fantastique", 878: "Science-Fiction",
+                            18: "Drame", 35: "Comédie", 53: "Thriller", 10752: "Guerre",
+                            10749: "Romance", 16: "Animation", 99: "Documentaire", 36: "Biographie"
+                        }
+                        genre_names = [genre_id_to_name.get(gid, "") for gid in movie.get("genre_ids", [])[:2] if genre_id_to_name.get(gid)]
+                    
+                    runtime = movie.get("runtime")
+                    duration_str = None
+                    if runtime:
+                        hours = runtime // 60
+                        minutes = runtime % 60
+                        if hours > 0:
+                            duration_str = f"{hours}h{minutes:02d}min"
+                        else:
+                            duration_str = f"{minutes}min"
+
+                    movie_data = {
+                        "id": movie.get("id"),
+                        "tmdb_id": movie.get("id"),
+                        "title": movie.get("title") or movie.get("name") or "Titre inconnu",
+                        "image": image_url,
+                        "year": str(year_movie),
+                        "release_date": release_date,
+                        "duration": duration_str,
+                        "runtime": runtime,
+                        "category": ", ".join(genre_names) if genre_names else "Autre",
+                        "vote_average": movie.get("vote_average", 0),
+                    }
+                    
+                    grouped[str(year_movie)].append(movie_data)
+                except Exception as e:
+                    logger.warning(f"Erreur lors du traitement d'un film: {str(e)}")
+                    continue
+            
+            # Limiter à 20 films par année après avoir tout traité
+            for year in years:
+                if len(grouped[str(year)]) > 20:
+                    grouped[str(year)] = grouped[str(year)][:20]
+        except Exception as e:
+            logger.error(f"Erreur lors de la récupération des films à venir: {str(e)}")
+            # Les années restent avec des listes vides (déjà initialisées)
 
         # S'assurer que toutes les années sont présentes dans la réponse
         for year in years:

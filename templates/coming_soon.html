@@ -50,29 +50,72 @@
 <!-- Sections de films par année -->
 <section class="categories bg-little-mermaid">
   <div class="container">
+    <!-- Indicateur de chargement global initial -->
+    <div id="global-loading" class="coming-soon-loading" style="display: none;">
+      <div class="loading-spinner-large">
+        <i class="fa fa-spinner fa-spin" aria-hidden="true"></i>
+      </div>
+      <p class="loading-text">Chargement des films à venir...</p>
+    </div>
+    
     <div class="category">
       <h2>Films de 2026</h2>
-      <div class="category-content-placeholder" data-year="2026"></div>
+      <div class="category-content-placeholder" data-year="2026">
+        <div class="coming-soon-loading">
+          <div class="loading-spinner-large">
+            <i class="fa fa-spinner fa-spin" aria-hidden="true"></i>
+          </div>
+          <p class="loading-text">Chargement...</p>
+        </div>
+      </div>
     </div>
 
     <div class="category">
       <h2>Films de 2027</h2>
-      <div class="category-content-placeholder" data-year="2027"></div>
+      <div class="category-content-placeholder" data-year="2027">
+        <div class="coming-soon-loading">
+          <div class="loading-spinner-large">
+            <i class="fa fa-spinner fa-spin" aria-hidden="true"></i>
+          </div>
+          <p class="loading-text">Chargement...</p>
+        </div>
+      </div>
     </div>
 
     <div class="category">
       <h2>Films de 2028</h2>
-      <div class="category-content-placeholder" data-year="2028"></div>
+      <div class="category-content-placeholder" data-year="2028">
+        <div class="coming-soon-loading">
+          <div class="loading-spinner-large">
+            <i class="fa fa-spinner fa-spin" aria-hidden="true"></i>
+          </div>
+          <p class="loading-text">Chargement...</p>
+        </div>
+      </div>
     </div>
 
     <div class="category">
       <h2>Films de 2029</h2>
-      <div class="category-content-placeholder" data-year="2029"></div>
+      <div class="category-content-placeholder" data-year="2029">
+        <div class="coming-soon-loading">
+          <div class="loading-spinner-large">
+            <i class="fa fa-spinner fa-spin" aria-hidden="true"></i>
+          </div>
+          <p class="loading-text">Chargement...</p>
+        </div>
+      </div>
     </div>
 
     <div class="category">
       <h2>Films de 2030</h2>
-      <div class="category-content-placeholder" data-year="2030"></div>
+      <div class="category-content-placeholder" data-year="2030">
+        <div class="coming-soon-loading">
+          <div class="loading-spinner-large">
+            <i class="fa fa-spinner fa-spin" aria-hidden="true"></i>
+          </div>
+          <p class="loading-text">Chargement...</p>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -170,11 +213,18 @@
       return;
     }
     
-    // Afficher un indicateur de chargement
+    // Afficher un indicateur de chargement amélioré
     categorySections.forEach((section) => {
       const placeholder = section.querySelector('.category-content-placeholder');
       if (placeholder) {
-        placeholder.innerHTML = '<div class="loading-spinner"><i class="fa fa-spinner fa-spin"></i> Chargement...</div>';
+        placeholder.innerHTML = `
+          <div class="coming-soon-loading">
+            <div class="loading-spinner-large">
+              <i class="fa fa-spinner fa-spin" aria-hidden="true"></i>
+            </div>
+            <p class="loading-text">Chargement des films à venir...</p>
+          </div>
+        `;
       }
     });
     
