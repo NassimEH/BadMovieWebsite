@@ -89,7 +89,7 @@ class WatchlistController:
 
     @staticmethod
     def update_watched(user_id, movie_data, watched_status):
-        """Met à jour le statut 'vu' (boolean)."""
+        """Met à jour le statut 'vu' (boolean). Si on passe de 'vu' à 'à voir', la note est réinitialisée à 0."""
         film = WatchlistController._get_or_create_film(movie_data)
         if not film: return False
 
@@ -98,6 +98,9 @@ class WatchlistController:
             commentaire = Commentaire(ID_user=user_id, ID_film=film.ID_film, watched=watched_status)
             db.session.add(commentaire)
         else:
+            # Si on passe de "vu" à "à voir", réinitialiser la note à 0
+            if commentaire.watched and not watched_status:
+                commentaire.score_user = 0
             commentaire.watched = watched_status
         
         db.session.commit()

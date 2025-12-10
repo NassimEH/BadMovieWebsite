@@ -329,6 +329,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         this.classList.remove('watched');
                         this.querySelector('i').className = 'fa fa-eye';
                         this.querySelector('.watched-text').textContent = 'Marquer comme vu';
+                        
+                        // Si on passe de "vu" à "à voir", réinitialiser la note à 0
+                        if (window.resetStarRating) {
+                            window.resetStarRating(0);
+                        }
                     }
                 }
             });
@@ -376,6 +381,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         }
+        
+        // Fonction pour réinitialiser la note (accessible globalement)
+        window.resetStarRating = function(newRating) {
+            currentRating = newRating || 0;
+            starRating.dataset.currentScore = currentRating.toString();
+            updateStarDisplay(starContainers, allStars, currentRating, false);
+            if (ratingValue) ratingValue.textContent = currentRating;
+            if (ratingLabel) ratingLabel.textContent = ratingLabels[currentRating] || '';
+        };
 
         // Gestion du survol
         allStars.forEach(star => {

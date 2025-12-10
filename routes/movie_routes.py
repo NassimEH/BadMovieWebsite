@@ -356,6 +356,100 @@ def api_filtered_movies():
                 logger.error(f"Erreur lors de la recherche: {str(e)}")
                 return jsonify({"error": "Erreur lors de la recherche", "movies": [], "total_pages": 1, "current_page": 1}), 500
 
+        # Fonction pour filtrer et formater les films
+        def filter_and_format_movies(movies_list):
+            """Filtre et formate une liste de films."""
+            formatted = []
+            for movie in movies_list:
+                # Filtrer les films sans affiche
+                if not movie.get("poster_path"):
+                    continue
+                
+                # Filtrer les films futurs (après 2025)
+                release_date = movie.get("release_date", "")
+                if release_date:
+                    try:
+                        from datetime import datetime
+                        release_dt = datetime.strptime(release_date, "%Y-%m-%d")
+                        max_date = datetime(2025, 12, 31)
+                        if release_dt > max_date:
+                            continue
+                    except ValueError:
+                        pass
+                
+                try:
+                    poster_path = movie.get("poster_path")
+                    release_date = movie.get("release_date") or ""
+                    year_movie = release_date.split("-")[0] if release_date else None
+                    
+                    # Filtrer les films sans affiche ou avec date de sortie future
+                    if not poster_path:
+                        continue  # Ignorer les films sans affiche
+                    
+                    # Vérifier que le film est déjà sorti (date <= aujourd'hui ou <= 2025)
+                    if release_date:
+                        try:
+                            from datetime import datetime
+                            release_dt = datetime.strptime(release_date, "%Y-%m-%d")
+                            max_date = datetime(2025, 12, 31)
+                            if release_dt > max_date:
+                                continue  # Ignorer les films futurs après 2025
+                        except ValueError:
+                            pass  # Si la date est invalide, on garde le film
+                    
+                    # Construire l'URL de l'image correctement
+                    image_url = None
+                    if poster_path:
+                        # S'assurer que le chemin ne commence pas déjà par http
+                        if poster_path.startswith("http"):
+                            image_url = poster_path
+                        elif poster_path.startswith("/"):
+                            image_url = f"https://image.tmdb.org/t/p/w500{poster_path}"
+                        else:
+                            image_url = f"https://image.tmdb.org/t/p/w500/{poster_path}"
+                    
+                    # Récupérer les genres
+                    genre_names = []
+                    if movie.get("genres"):
+                        genre_names = [g.get("name", "") for g in movie.get("genres", [])[:2]]
+                    elif movie.get("genre_ids"):
+                        # Mapping des IDs de genres vers les noms
+                        genre_id_to_name = {
+                            28: "Action", 27: "Horreur", 14: "Fantastique", 878: "Science-Fiction",
+                            18: "Drame", 35: "Comédie", 53: "Thriller", 10752: "Guerre",
+                            10749: "Romance", 16: "Animation", 99: "Documentaire", 36: "Biographie"
+                        }
+                        genre_names = [genre_id_to_name.get(gid, "") for gid in movie.get("genre_ids", [])[:2] if genre_id_to_name.get(gid)]
+                    
+                    # Récupérer la durée si disponible
+                    runtime = movie.get("runtime")
+                    duration_str = None
+                    if runtime:
+                        hours = runtime // 60
+                        minutes = runtime % 60
+                        if hours > 0:
+                            duration_str = f"{hours}h{minutes:02d}min"
+                        else:
+                            duration_str = f"{minutes}min"
+
+                    formatted.append({
+                        "id": movie.get("id"),
+                        "tmdb_id": movie.get("id"),
+                        "title": movie.get("title") or movie.get("name") or "Titre inconnu",
+                        "image": image_url,
+                        "year": year_movie,
+                        "release_date": release_date,
+                        "duration": duration_str,
+                        "runtime": runtime,
+                        "category": ", ".join(genre_names) if genre_names else "Autre",
+                        "vote_average": movie.get("vote_average", 0),
+                    })
+                except Exception as e:
+                    logger.warning(f"Erreur lors du traitement d'un film: {str(e)}")
+                    continue
+            return formatted
+
+        # Récupérer la page demandée
         try:
             response = requests.get(url, params=params, timeout=5)
             response.raise_for_status()
@@ -368,93 +462,38 @@ def api_filtered_movies():
         total_pages = data.get("total_pages", 1)
         current_page = data.get("page", 1)
 
-        formatted_movies = []
-        for movie in movies:
-            # Filtrer les films sans affiche
-            if not movie.get("poster_path"):
-                continue
-            
-            # Filtrer les films futurs (après 2025)
-            release_date = movie.get("release_date", "")
-            if release_date:
+        # Filtrer et formater les films de la page demandée
+        formatted_movies = filter_and_format_movies(movies)
+        
+        # Si la page est vide et qu'on est sur la dernière page, essayer de récupérer les pages précédentes
+        if len(formatted_movies) == 0 and current_page == total_pages and current_page > 1:
+            # Essayer de récupérer les pages précédentes jusqu'à trouver des résultats
+            max_attempts = min(5, current_page - 1)  # Limiter à 5 tentatives ou jusqu'à la page 1
+            for attempt in range(1, max_attempts + 1):
+                prev_page = current_page - attempt
+                if prev_page < 1:
+                    break
+                
                 try:
-                    from datetime import datetime
-                    release_dt = datetime.strptime(release_date, "%Y-%m-%d")
-                    max_date = datetime(2025, 12, 31)
-                    if release_dt > max_date:
-                        continue
-                except ValueError:
-                    pass
-            try:
-                poster_path = movie.get("poster_path")
-                release_date = movie.get("release_date") or ""
-                year_movie = release_date.split("-")[0] if release_date else None
-                
-                # Filtrer les films sans affiche ou avec date de sortie future
-                if not poster_path:
-                    continue  # Ignorer les films sans affiche
-                
-                # Vérifier que le film est déjà sorti (date <= aujourd'hui ou <= 2025)
-                if release_date:
-                    try:
-                        from datetime import datetime
-                        release_dt = datetime.strptime(release_date, "%Y-%m-%d")
-                        max_date = datetime(2025, 12, 31)
-                        if release_dt > max_date:
-                            continue  # Ignorer les films futurs après 2025
-                    except ValueError:
-                        pass  # Si la date est invalide, on garde le film
-                
-                # Construire l'URL de l'image correctement
-                image_url = None
-                if poster_path:
-                    # S'assurer que le chemin ne commence pas déjà par http
-                    if poster_path.startswith("http"):
-                        image_url = poster_path
-                    elif poster_path.startswith("/"):
-                        image_url = f"https://image.tmdb.org/t/p/w500{poster_path}"
-                    else:
-                        image_url = f"https://image.tmdb.org/t/p/w500/{poster_path}"
-                
-                # Récupérer les genres
-                genre_names = []
-                if movie.get("genres"):
-                    genre_names = [g.get("name", "") for g in movie.get("genres", [])[:2]]
-                elif movie.get("genre_ids"):
-                    # Mapping des IDs de genres vers les noms
-                    genre_id_to_name = {
-                        28: "Action", 27: "Horreur", 14: "Fantastique", 878: "Science-Fiction",
-                        18: "Drame", 35: "Comédie", 53: "Thriller", 10752: "Guerre",
-                        10749: "Romance", 16: "Animation", 99: "Documentaire", 36: "Biographie"
-                    }
-                    genre_names = [genre_id_to_name.get(gid, "") for gid in movie.get("genre_ids", [])[:2] if genre_id_to_name.get(gid)]
-                
-                # Récupérer la durée si disponible
-                runtime = movie.get("runtime")
-                duration_str = None
-                if runtime:
-                    hours = runtime // 60
-                    minutes = runtime % 60
-                    if hours > 0:
-                        duration_str = f"{hours}h{minutes:02d}min"
-                    else:
-                        duration_str = f"{minutes}min"
-
-                formatted_movies.append({
-                    "id": movie.get("id"),
-                    "tmdb_id": movie.get("id"),
-                    "title": movie.get("title") or movie.get("name") or "Titre inconnu",
-                    "image": image_url,
-                    "year": year_movie,
-                    "release_date": release_date,
-                    "duration": duration_str,
-                    "runtime": runtime,
-                    "category": ", ".join(genre_names) if genre_names else "Autre",
-                    "vote_average": movie.get("vote_average", 0),
-                })
-            except Exception as e:
-                logger.warning(f"Erreur lors du traitement d'un film: {str(e)}")
-                continue
+                    prev_params = params.copy()
+                    prev_params["page"] = prev_page
+                    prev_response = requests.get(url, params=prev_params, timeout=5)
+                    prev_response.raise_for_status()
+                    prev_data = prev_response.json()
+                    prev_movies = prev_data.get("results", [])
+                    prev_formatted = filter_and_format_movies(prev_movies)
+                    
+                    if len(prev_formatted) > 0:
+                        # On a trouvé des résultats, utiliser cette page
+                        formatted_movies = prev_formatted
+                        current_page = prev_page
+                        # Ajuster total_pages pour refléter la dernière page valide
+                        total_pages = prev_page
+                        logger.info(f"Page {current_page} vide, utilisation de la page {prev_page} avec {len(prev_formatted)} films")
+                        break
+                except requests.RequestException as e:
+                    logger.warning(f"Erreur lors de la récupération de la page {prev_page}: {str(e)}")
+                    continue
 
         return jsonify({
             "movies": formatted_movies,
