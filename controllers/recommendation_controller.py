@@ -3,6 +3,7 @@ import os
 import logging
 import requests
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from flask import current_app
 from models import Commentaire
 from controllers.watchlist_controller import WatchlistController
@@ -48,12 +49,10 @@ class RecommendationController:
         
         base_url = "https://api.themoviedb.org/3/movie"
         
-        for item in highly_rated:
+        def fetch_movie_details(item):
+            """Récupère les détails d'un film et retourne les données."""
             tmdb_id = item.ID_film
-            favorite_movie_ids.append(tmdb_id)
-            
             try:
-                # Récupérer les détails complets du film avec credits
                 response = requests.get(
                     f"{base_url}/{tmdb_id}",
                     params={
@@ -61,10 +60,30 @@ class RecommendationController:
                         "language": "fr-FR",
                         "append_to_response": "credits",
                     },
-                    timeout=5,
+                    timeout=3,  # Timeout réduit pour accélérer
                 )
                 response.raise_for_status()
-                movie_data = response.json()
+                return item, response.json()
+            except requests.RequestException as e:
+                logger.warning(f"Erreur lors de la récupération des détails pour {tmdb_id}: {str(e)}")
+                return item, None
+            except Exception as e:
+                logger.warning(f"Erreur inattendue pour {tmdb_id}: {str(e)}")
+                return item, None
+        
+        # Récupérer les détails en parallèle pour accélérer
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            future_to_item = {
+                executor.submit(fetch_movie_details, item): item 
+                for item in highly_rated
+            }
+            
+            for future in as_completed(future_to_item):
+                item, movie_data = future.result()
+                if not movie_data:
+                    continue
+                
+                favorite_movie_ids.append(item.ID_film)
                 
                 # Extraire les genres
                 movie_genres = movie_data.get("genres", [])
@@ -82,13 +101,6 @@ class RecommendationController:
                 cast = credits.get("cast", []) if isinstance(credits, dict) else []
                 for actor in cast[:3]:  # Top 3 acteurs
                     actors_counter[actor.get("id")] += item.score_user
-                    
-            except requests.RequestException as e:
-                logger.warning(f"Erreur lors de la récupération des détails pour {tmdb_id}: {str(e)}")
-                continue
-            except Exception as e:
-                logger.warning(f"Erreur inattendue pour {tmdb_id}: {str(e)}")
-                continue
         
         # Récupérer les genres, réalisateurs et acteurs les plus fréquents
         top_genres = [genre_id for genre_id, _ in genres_counter.most_common(3)]
@@ -230,7 +242,7 @@ class RecommendationController:
             params["with_cast"] = str(actor_id)
         
         try:
-            response = requests.get(base_url, params=params, timeout=5)
+            response = requests.get(base_url, params=params, timeout=3)  # Timeout réduit
             response.raise_for_status()
             data = response.json()
             movies = data.get("results", [])
@@ -289,7 +301,7 @@ class RecommendationController:
                     "language": "fr-FR",
                     "page": 1,
                 },
-                timeout=5,
+                timeout=3,  # Timeout réduit
             )
             response.raise_for_status()
             data = response.json()
@@ -351,7 +363,7 @@ class RecommendationController:
                     "page": 1,
                     "primary_release_date.lte": "2025-12-31",
                 },
-                timeout=5,
+                timeout=3,  # Timeout réduit
             )
             response.raise_for_status()
             data = response.json()

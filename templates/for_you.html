@@ -67,6 +67,14 @@
 document.addEventListener('DOMContentLoaded', function() {
   const container = document.getElementById('recommendations-container');
   
+  // S'assurer que le message de chargement reste affiché
+  container.innerHTML = `
+    <div class="loading-spinner">
+      <i class="fa fa-spinner fa-spin" aria-hidden="true"></i>
+      <span>Chargement...</span>
+    </div>
+  `;
+  
   fetch('/movies/api/recommendations?limit=20')
     .then(r => {
       if (!r.ok) throw new Error('Erreur réseau');
