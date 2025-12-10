@@ -59,11 +59,12 @@ window.changeBg = function(bg, title) {
     moviesHero.style.backgroundPosition = 'center top';
   }
   
-  if (watchlistHero) {
-    watchlistHero.style.background = `url("/static/images/movies/${bg}")`;
-    watchlistHero.style.backgroundSize = 'cover';
-    watchlistHero.style.backgroundPosition = 'center top';
-  }
+  // Fond d'image retiré pour watchlist-hero
+  // if (watchlistHero) {
+  //   watchlistHero.style.background = `url("/static/images/movies/${bg}")`;
+  //   watchlistHero.style.backgroundSize = 'cover';
+  //   watchlistHero.style.backgroundPosition = 'center top';
+  // }
   
   // Sauvegarder la préférence
   localStorage.setItem('badmovie_background', JSON.stringify({ bg, title }));

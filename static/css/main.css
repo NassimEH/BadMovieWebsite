@@ -3412,17 +3412,7 @@ header {
 }
 
 .watchlist-page-container::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('../images/movies/bg-little-mermaid.jpg') no-repeat center;
-  background-size: cover;
-  filter: blur(5px) brightness(0.25);
-  z-index: 1;
-  transition: background-image 0.5s ease;
+  display: none;
 }
 
 .watchlist-page-container::after {
@@ -3443,6 +3433,8 @@ header {
   text-align: center;
   margin-bottom: 60px;
   padding: 40px 0;
+  background: none !important;
+  background-image: none !important;
 }
 
 .watchlist-hero-content {
