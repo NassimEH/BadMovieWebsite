@@ -14,7 +14,15 @@ class Config:
         print("⚠️  ATTENTION: SECRET_KEY non définie dans .env, utilisation d'une clé temporaire.")
         print("   Veuillez définir SECRET_KEY dans votre fichier .env pour la production.")
     
-    SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///badmovie.db')
+    # Configuration PostgreSQL (avec fallback SQLite pour développement local)
+    DATABASE_URL = os.getenv('DATABASE_URL')
+    if DATABASE_URL:
+        # PostgreSQL (production/Docker)
+        SQLALCHEMY_DATABASE_URI = DATABASE_URL
+    else:
+        # SQLite (développement local sans Docker)
+        SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///badmovie.db')
+    
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Clés TMDB (viennent du .env)
