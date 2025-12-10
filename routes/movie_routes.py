@@ -531,10 +531,10 @@ def api_coming_soon():
             """Fonction pour récupérer tous les films à venir."""
             all_movies = []
             page = 1
-            max_pages = 15  # Réduire à 15 pages pour accélérer le chargement initial
+            max_pages = 20  # Augmenter à 20 pages pour avoir plus de films
             
-            # Objectif : avoir au moins 5 films par année avant de s'arrêter
-            min_films_per_year = 5
+            # Objectif : avoir au moins 10 films par année avant de s'arrêter
+            min_films_per_year = 10
             
             while page <= max_pages:
                 params = {
@@ -559,8 +559,9 @@ def api_coming_soon():
                     all_movies.extend(movies)
                     
                     # Vérifier si on a assez de films pour chaque année
-                    # (vérification rapide avant de continuer)
-                    if len(all_movies) >= 100:  # Si on a déjà beaucoup de films, vérifier
+                    # (vérification rapide avant de continuer, mais seulement après avoir récupéré beaucoup de films)
+                    # Ne vérifier qu'après avoir récupéré au moins 300 films pour s'assurer d'avoir assez pour toutes les années
+                    if len(all_movies) >= 300:
                         temp_grouped = {}
                         for movie in all_movies:
                             release_date = movie.get("release_date", "")
@@ -574,10 +575,15 @@ def api_coming_soon():
                                 except:
                                     pass
                         
-                        # Si toutes les années ont au moins min_films_per_year films, on peut arrêter
-                        years_with_films = [y for y in years if str(y) in temp_grouped and temp_grouped[str(y)] >= min_films_per_year]
-                        if len(years_with_films) == len(years):
-                            break
+                        # Vérifier qu'on a toutes les années représentées
+                        years_present = [y for y in years if str(y) in temp_grouped]
+                        
+                        # Si toutes les années sont présentes ET qu'elles ont toutes au moins 15 films, on peut arrêter
+                        if len(years_present) == len(years):
+                            min_films = min([temp_grouped[str(y)] for y in years])
+                            # S'assurer qu'on a au moins 15 films pour chaque année avant d'arrêter
+                            if min_films >= 15:
+                                break
                     
                     # Si on a atteint la dernière page, arrêter
                     total_pages = data.get("total_pages", 1)
@@ -674,9 +680,14 @@ def api_coming_soon():
                     continue
             
             # Limiter à 20 films par année après avoir tout traité
+            # Mais s'assurer qu'on a au moins quelques films pour chaque année
             for year in years:
                 if len(grouped[str(year)]) > 20:
                     grouped[str(year)] = grouped[str(year)][:20]
+                # Si une année a très peu de films, essayer de garder tous ceux qu'on a
+                elif len(grouped[str(year)]) < 5:
+                    # Garder tous les films disponibles pour cette année
+                    pass
         except Exception as e:
             logger.error(f"Erreur lors de la récupération des films à venir: {str(e)}")
             # Les années restent avec des listes vides (déjà initialisées)

@@ -945,33 +945,36 @@ header {
 /* ==================== GRILLE DE FILMS FILTRÉS ==================== */
 .movies-filtered-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(160px, 180px));
   gap: 24px;
   padding: 20px 0;
   position: relative;
   z-index: 3;
   width: 100%;
   align-items: start;
-  justify-items: stretch; /* Étire les éléments pour remplir l'espace */
+  justify-items: start; /* Aligne les éléments à gauche sans les étirer */
   grid-auto-flow: row; /* Assure que les éléments se placent en lignes */
+  justify-content: start; /* Aligne la grille à gauche */
 }
 
 .movies-filtered-grid .movie-card-wrapper {
-  width: 100%;
+  width: 180px; /* Largeur fixe */
+  max-width: 180px; /* Largeur maximale fixe */
+  min-width: 160px; /* Largeur minimale */
   display: block;
-  min-width: 0; /* Permet au wrapper de se rétrécir */
   overflow: hidden; /* Empêche le débordement */
 }
 
 .movies-filtered-grid .movie-card-link {
   width: 100%;
   display: block;
+  max-width: 180px; /* Limite la largeur maximale */
 }
 
 .movies-filtered-grid .movie-card {
   width: 100%;
-  min-width: 0; /* Permet à la carte de se rétrécir */
-  max-width: none; /* Supprime toute limitation max-width */
+  min-width: 160px; /* Largeur minimale fixe */
+  max-width: 180px; /* Largeur maximale fixe */
   margin: 0; /* Supprime le margin auto qui peut causer des problèmes */
   box-sizing: border-box; /* Inclut padding et border dans la largeur */
   height: 100%; /* Permet à la carte de remplir toute la hauteur de la cellule */
@@ -1042,29 +1045,89 @@ header {
 /* Responsive pour la grille de films filtrés */
 @media (max-width: 1200px) {
   .movies-filtered-grid {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(150px, 170px));
     gap: 20px;
+  }
+  
+  .movies-filtered-grid .movie-card-wrapper {
+    width: 170px;
+    max-width: 170px;
+    min-width: 150px;
+  }
+  
+  .movies-filtered-grid .movie-card-link {
+    max-width: 170px;
+  }
+  
+  .movies-filtered-grid .movie-card {
+    max-width: 170px;
+    min-width: 150px;
   }
 }
 
 @media (max-width: 991px) {
   .movies-filtered-grid {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(140px, 160px));
     gap: 18px;
+  }
+  
+  .movies-filtered-grid .movie-card-wrapper {
+    width: 160px;
+    max-width: 160px;
+    min-width: 140px;
+  }
+  
+  .movies-filtered-grid .movie-card-link {
+    max-width: 160px;
+  }
+  
+  .movies-filtered-grid .movie-card {
+    max-width: 160px;
+    min-width: 140px;
   }
 }
 
 @media (max-width: 768px) {
   .movies-filtered-grid {
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(130px, 150px));
     gap: 16px;
+  }
+  
+  .movies-filtered-grid .movie-card-wrapper {
+    width: 150px;
+    max-width: 150px;
+    min-width: 130px;
+  }
+  
+  .movies-filtered-grid .movie-card-link {
+    max-width: 150px;
+  }
+  
+  .movies-filtered-grid .movie-card {
+    max-width: 150px;
+    min-width: 130px;
   }
 }
 
 @media (max-width: 600px) {
   .movies-filtered-grid {
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(120px, 140px));
     gap: 14px;
+  }
+  
+  .movies-filtered-grid .movie-card-wrapper {
+    width: 140px;
+    max-width: 140px;
+    min-width: 120px;
+  }
+  
+  .movies-filtered-grid .movie-card-link {
+    max-width: 140px;
+  }
+  
+  .movies-filtered-grid .movie-card {
+    max-width: 140px;
+    min-width: 120px;
   }
 }
 
