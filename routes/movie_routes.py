@@ -515,7 +515,7 @@ def api_coming_soon():
             logger.error("TMDB_API_KEY manquante dans l'environnement")
             return jsonify({"error": "TMDB_API_KEY manquante dans l'environnement"}), 500
 
-        from datetime import datetime, timedelta
+        from datetime import datetime
         
         base_url = "https://api.themoviedb.org/3/discover/movie"
         years = [2026, 2027, 2028, 2029, 2030]
@@ -620,7 +620,7 @@ def api_coming_soon():
                     release_date = movie.get("release_date") or ""
                     if not release_date:
                         continue
-                    
+
                     # Extraire l'année de la date de sortie
                     try:
                         year_movie = int(release_date.split("-")[0])
@@ -672,13 +672,11 @@ def api_coming_soon():
                         "runtime": runtime,
                         "category": ", ".join(genre_names) if genre_names else "Autre",
                         "vote_average": movie.get("vote_average", 0),
-                    }
-                    
+                    }               
                     grouped[str(year_movie)].append(movie_data)
                 except Exception as e:
                     logger.warning(f"Erreur lors du traitement d'un film: {str(e)}")
                     continue
-            
             # Limiter à 20 films par année après avoir tout traité
             # Mais s'assurer qu'on a au moins quelques films pour chaque année
             for year in years:
@@ -766,13 +764,11 @@ def api_recommendations():
     try:
         from flask import request
         from controllers.recommendation_controller import RecommendationController
-        
         limit = int(request.args.get('limit', 20))
         recommendations = RecommendationController.get_recommendations(
-            current_user.ID_user, 
+            current_user.ID_user,
             limit=limit
         )
-        
         return jsonify({"movies": recommendations})
     except Exception as e:
         logger.error(f"Erreur lors de la génération des recommandations: {str(e)}", exc_info=True)

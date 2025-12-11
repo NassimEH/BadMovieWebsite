@@ -63,11 +63,11 @@ def sign_up():
         elif(len(_email) < 4): flash('Email trop courte', category='error')
         elif(len(_username) < 4): flash('Nom trop court, au moins 4 caractères est nécessaire ', category='error')
         elif(len(_password) < 7): flash('Mot de passe trop court, au moins 7 caractères est nécessaire', category='error')
-        
+       
         else : 
             new_user = User(
-                mail=_email, 
-                nom=_username, 
+                mail=_email,
+                nom=_username,
                 password=generate_password_hash(_password, method='pbkdf2:sha256')
             )
 

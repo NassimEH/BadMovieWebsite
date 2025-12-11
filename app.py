@@ -2,6 +2,11 @@
 from flask import Flask, render_template
 from extensions import db, login_manager
 from config import Config
+from routes.auth_routes import auth_bp
+from routes.movie_routes import movie_bp
+from routes.watchlist_routes import watchlist_bp
+from routes.settings_routes import settings_bp
+from models import User
 
 # Création de l'application Flask
 app = Flask(__name__)
@@ -12,20 +17,11 @@ db.init_app(app)
 login_manager.init_app(app)
 login_manager.login_view = 'auth.login'
 
-# Import des modèles (après l'initialisation de db)
-from models import User, Film, Commentaire
-
 # Callback pour Flask-Login
 @login_manager.user_loader
 def load_user(user_id):
     """Charge un utilisateur depuis la base de données."""
     return User.query.get(int(user_id))
-
-# Import et enregistrement des blueprints
-from routes.auth_routes import auth_bp
-from routes.movie_routes import movie_bp
-from routes.watchlist_routes import watchlist_bp
-from routes.settings_routes import settings_bp
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(movie_bp)

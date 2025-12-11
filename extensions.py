@@ -5,4 +5,3 @@ from flask_login import LoginManager
 # Initialisation des extensions sans l'app
 db = SQLAlchemy()
 login_manager = LoginManager()
-
