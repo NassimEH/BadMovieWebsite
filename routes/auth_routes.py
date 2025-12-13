@@ -1,3 +1,4 @@
+import re
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from werkzeug.security import check_password_hash, generate_password_hash
 from models import User
@@ -19,7 +20,7 @@ def login():
         or renders the login page.
     """
 
-    if(request.method == 'POST'):
+    if request.method == 'POST':
         _username = request.form.get("username")
         _password = request.form.get("password")
 
@@ -30,7 +31,7 @@ def login():
                 login_user(user, remember=True)
                 return redirect(url_for('index'))
             else:
-                flash('Mot de passe incorect', category='error')
+                flash('Mot de passe incorrect', category='error')
         else:
             flash('Aucun compte avec ce nom existe', category='error')
 
@@ -50,31 +51,44 @@ def sign_up():
         or renders the sign-up page with error messages.
     """
 
-    if(request.method == 'POST'):
+    if request.method == 'POST':
         _username = request.form.get("username")
         _email  = request.form.get("email")
         _password = request.form.get("password")
 
+        # Validation de l'email avec regex
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        
         user = User.query.filter_by(nom=_username).first()
         email = User.query.filter_by(mail=_email).first()
+        
         if user:
             flash("Compte déjà existant", category='error')
-        elif email : flash(f"email déjà attribuée au compte {email.nom}", category='error')
-        elif(len(_email) < 4): flash('Email trop courte', category='error')
-        elif(len(_username) < 4): flash('Nom trop court, au moins 4 caractères est nécessaire ', category='error')
-        elif(len(_password) < 7): flash('Mot de passe trop court, au moins 7 caractères est nécessaire', category='error')
-       
-        else : 
-            new_user = User(
-                mail=_email,
-                nom=_username,
-                password=generate_password_hash(_password, method='pbkdf2:sha256')
-            )
+        elif email:
+            flash(f"Email déjà attribué au compte {email.nom}", category='error')
+        elif not re.match(email_pattern, _email):
+            flash('Format d\'email invalide', category='error')
+        elif len(_email) < 4:
+            flash('Email trop court', category='error')
+        elif len(_username) < 4:
+            flash('Nom trop court, au moins 4 caractères sont nécessaires', category='error')
+        elif len(_password) < 7:
+            flash('Mot de passe trop court, au moins 7 caractères sont nécessaires', category='error')
+        else:
+            try:
+                new_user = User(
+                    mail=_email,
+                    nom=_username,
+                    password=generate_password_hash(_password, method='pbkdf2:sha256')
+                )
 
-            db.session.add(new_user)
-            db.session.commit()
-            flash('Compte créé avec succès! Vous pouvez maintenant vous connecter.', category='success')
-            return redirect(url_for('auth.login'))
+                db.session.add(new_user)
+                db.session.commit()
+                flash('Compte créé avec succès! Vous pouvez maintenant vous connecter.', category='success')
+                return redirect(url_for('auth.login'))
+            except Exception as e:
+                db.session.rollback()
+                flash('Erreur lors de la création du compte. Veuillez réessayer.', category='error')
     return render_template("auth/register.html")
 
 @auth_bp.route('/logout')

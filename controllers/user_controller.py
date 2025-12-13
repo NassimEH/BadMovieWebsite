@@ -1,4 +1,5 @@
 """Contrôleur pour la gestion des utilisateurs."""
+import re
 from werkzeug.security import check_password_hash, generate_password_hash
 from models import User
 from extensions import db
@@ -34,9 +35,13 @@ class UserController:
         if len(new_username) < 4:
             return False, "Le nom d'utilisateur doit contenir au moins 4 caractères"
         
-        user.nom = new_username
-        db.session.commit()
-        return True, "Nom d'utilisateur mis à jour avec succès"
+        try:
+            user.nom = new_username
+            db.session.commit()
+            return True, "Nom d'utilisateur mis à jour avec succès"
+        except Exception:
+            db.session.rollback()
+            return False, "Erreur lors de la mise à jour"
     
     @staticmethod
     def update_email(user_id, new_email):
@@ -50,12 +55,20 @@ class UserController:
         if existing_user and existing_user.ID_user != user_id:
             return False, "Cet email est déjà utilisé"
         
+        # Validation de l'email avec regex
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(email_pattern, new_email):
+            return False, "Format d'email invalide"
         if len(new_email) < 4:
             return False, "L'email doit contenir au moins 4 caractères"
         
-        user.mail = new_email
-        db.session.commit()
-        return True, "Email mis à jour avec succès"
+        try:
+            user.mail = new_email
+            db.session.commit()
+            return True, "Email mis à jour avec succès"
+        except Exception:
+            db.session.rollback()
+            return False, "Erreur lors de la mise à jour"
     
     @staticmethod
     def update_password(user_id, current_password, new_password):
@@ -71,9 +84,13 @@ class UserController:
         if len(new_password) < 7:
             return False, "Le mot de passe doit contenir au moins 7 caractères"
         
-        user.password = generate_password_hash(new_password, method='pbkdf2:sha256')
-        db.session.commit()
-        return True, "Mot de passe mis à jour avec succès"
+        try:
+            user.password = generate_password_hash(new_password, method='pbkdf2:sha256')
+            db.session.commit()
+            return True, "Mot de passe mis à jour avec succès"
+        except Exception:
+            db.session.rollback()
+            return False, "Erreur lors de la mise à jour"
     
     @staticmethod
     def update_profile_picture(user_id, filename):
@@ -82,9 +99,13 @@ class UserController:
         if not user:
             return False, "Utilisateur non trouvé"
         
-        user.profile_picture = filename
-        db.session.commit()
-        return True, "Photo de profil mise à jour avec succès"
+        try:
+            user.profile_picture = filename
+            db.session.commit()
+            return True, "Photo de profil mise à jour avec succès"
+        except Exception:
+            db.session.rollback()
+            return False, "Erreur lors de la mise à jour"
     
     @staticmethod
     def save_profile_picture(file, user_id):

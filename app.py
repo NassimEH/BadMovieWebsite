@@ -16,6 +16,8 @@ app.config.from_object(Config)
 db.init_app(app)
 login_manager.init_app(app)
 login_manager.login_view = 'auth.login'
+login_manager.login_message = 'Veuillez vous connecter pour accéder à cette page.'
+login_manager.login_message_category = 'info'
 
 # Callback pour Flask-Login
 @login_manager.user_loader
@@ -36,7 +38,10 @@ def index():
 
 
 if __name__ == '__main__':
+    import os
     with app.app_context():
         db.create_all()  # Création des tables si elles n'existent pas
     # Écouter sur 0.0.0.0 pour permettre les connexions externes (Docker)
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # Utiliser DEBUG depuis les variables d'environnement (False par défaut en production)
+    debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+    app.run(host='0.0.0.0', port=5000, debug=debug_mode)

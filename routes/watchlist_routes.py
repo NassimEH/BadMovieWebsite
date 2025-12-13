@@ -206,9 +206,12 @@ def get_filtered_watchlist():
                         if poster_path:
                             film_image = f"https://image.tmdb.org/t/p/w500{poster_path}"
                             # Mettre à jour l'image en base de données
-                            item.film.image = film_image
-                            from extensions import db
-                            db.session.commit()
+                            try:
+                                item.film.image = film_image
+                                from extensions import db
+                                db.session.commit()
+                            except Exception:
+                                db.session.rollback()
             except Exception:
                 # En cas d'erreur, garder l'image vide
                 pass

@@ -643,3 +643,27 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
+// Auto-dismiss flash messages after 5 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    const flashMessages = document.querySelectorAll('.flash-message');
+    flashMessages.forEach(function(message) {
+        setTimeout(function() {
+            // Ajouter une animation de fade out
+            message.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            message.style.opacity = '0';
+            message.style.transform = 'translateX(100%)';
+            
+            // Supprimer l'élément après l'animation
+            setTimeout(function() {
+                message.remove();
+                
+                // Si c'était le dernier message, supprimer aussi le conteneur
+                const flashContainer = document.querySelector('.flash-messages');
+                if (flashContainer && flashContainer.children.length === 0) {
+                    flashContainer.remove();
+                }
+            }, 500);
+        }, 5000); // 5 secondes
+    });
+});
