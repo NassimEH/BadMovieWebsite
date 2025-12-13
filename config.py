@@ -11,7 +11,7 @@ class Config:
         # Générer une clé secrète par défaut en développement (NE PAS utiliser en production)
         import secrets
         SECRET_KEY = secrets.token_hex(32)
-        print("⚠️  ATTENTION: SECRET_KEY non définie dans .env, utilisation d'une clé temporaire.")
+        print("********* ATTENTION: SECRET_KEY non définie dans .env, utilisation d'une clé temporaire.")
         print("   Veuillez définir SECRET_KEY dans votre fichier .env pour la production.")
 
     # Configuration PostgreSQL (avec fallback SQLite pour développement local)
