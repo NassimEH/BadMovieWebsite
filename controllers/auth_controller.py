@@ -10,11 +10,9 @@ class AuthController:
     @staticmethod
     def register_user(nom, email, password):
         """Enregistre un nouvel utilisateur."""
-        # Vérifier si l'utilisateur existe déjà
         if User.query.filter_by(mail=email).first():
             return None, "Cet email est déjà utilisé"
         
-        # Créer le nouvel utilisateur
         hashed_password = generate_password_hash(password)
         user = User(nom=nom, mail=email, password=hashed_password)
         db.session.add(user)

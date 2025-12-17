@@ -27,7 +27,6 @@ class UserController:
         if not user:
             return False, "Utilisateur non trouvé"
         
-        # Vérifier si le nom d'utilisateur est déjà pris
         existing_user = User.query.filter_by(nom=new_username).first()
         if existing_user and existing_user.ID_user != user_id:
             return False, "Ce nom d'utilisateur est déjà pris"
@@ -50,7 +49,6 @@ class UserController:
         if not user:
             return False, "Utilisateur non trouvé"
         
-        # Vérifier si l'email est déjà utilisé
         existing_user = User.query.filter_by(mail=new_email).first()
         if existing_user and existing_user.ID_user != user_id:
             return False, "Cet email est déjà utilisé"
@@ -77,7 +75,6 @@ class UserController:
         if not user:
             return False, "Utilisateur non trouvé"
         
-        # Vérifier le mot de passe actuel
         if not check_password_hash(user.password, current_password):
             return False, "Mot de passe actuel incorrect"
         
@@ -117,13 +114,11 @@ class UserController:
             file.seek(0)  # Réinitialiser le pointeur
             return None, "Le fichier est trop volumineux (maximum 5MB)"
         
-        file.seek(0)  # Réinitialiser le pointeur
+        file.seek(0)
         
-        # Créer le dossier si nécessaire
         upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'profiles')
         os.makedirs(upload_folder, exist_ok=True)
         
-        # Générer un nom de fichier sécurisé
         import time
         filename = secure_filename(file.filename)
         file_ext = filename.rsplit('.', 1)[1].lower()
@@ -131,9 +126,7 @@ class UserController:
         new_filename = f"user_{user_id}_{timestamp}.{file_ext}"
         filepath = os.path.join(upload_folder, new_filename)
         
-        # Sauvegarder le fichier
         file.save(filepath)
         
-        # Retourner le chemin relatif
         return f"/static/uploads/profiles/{new_filename}", None
 

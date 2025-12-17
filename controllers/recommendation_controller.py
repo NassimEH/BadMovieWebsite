@@ -24,7 +24,6 @@ class RecommendationController:
         """Récupère les préférences de l'utilisateur basées sur sa watchlist."""
         watchlist = WatchlistController.get_user_watchlist(user_id)
         
-        # Filtrer les films avec note > 3/5
         highly_rated = [
             item for item in watchlist 
             if item.score_user and item.score_user > 3
@@ -33,10 +32,8 @@ class RecommendationController:
         if not highly_rated:
             return None, None, None, []
         
-        # Récupérer les IDs des films déjà dans la watchlist pour éviter les doublons
         watchlist_ids = {item.ID_film for item in watchlist}
         
-        # Collecter les genres, réalisateurs et acteurs
         genres_counter = Counter()
         directors_counter = Counter()
         actors_counter = Counter()
@@ -50,7 +47,6 @@ class RecommendationController:
         base_url = "https://api.themoviedb.org/3/movie"
         
         def fetch_movie_details(item):
-            """Récupère les détails d'un film et retourne les données."""
             tmdb_id = item.ID_film
             try:
                 response = requests.get(
@@ -60,7 +56,7 @@ class RecommendationController:
                         "language": "fr-FR",
                         "append_to_response": "credits",
                     },
-                    timeout=3,  # Timeout réduit pour accélérer
+                    timeout=3,
                 )
                 response.raise_for_status()
                 return item, response.json()
@@ -71,7 +67,6 @@ class RecommendationController:
                 logger.warning(f"Erreur inattendue pour {tmdb_id}: {str(e)}")
                 return item, None
         
-        # Récupérer les détails en parallèle pour accélérer
         with ThreadPoolExecutor(max_workers=5) as executor:
             future_to_item = {
                 executor.submit(fetch_movie_details, item): item 
@@ -85,24 +80,20 @@ class RecommendationController:
                 
                 favorite_movie_ids.append(item.ID_film)
                 
-                # Extraire les genres
                 movie_genres = movie_data.get("genres", [])
                 for genre in movie_genres:
-                    genres_counter[genre.get("id")] += item.score_user  # Ponderer par la note
+                    genres_counter[genre.get("id")] += item.score_user
                 
-                # Extraire le réalisateur
                 credits = movie_data.get("credits", {})
                 crew = credits.get("crew", []) if isinstance(credits, dict) else []
                 for person in crew:
                     if person.get("job") == "Director":
                         directors_counter[person.get("id")] += item.score_user
                 
-                # Extraire les acteurs principaux (top 3)
                 cast = credits.get("cast", []) if isinstance(credits, dict) else []
-                for actor in cast[:3]:  # Top 3 acteurs
+                for actor in cast[:3]:
                     actors_counter[actor.get("id")] += item.score_user
         
-        # Récupérer les genres, réalisateurs et acteurs les plus fréquents
         top_genres = [genre_id for genre_id, _ in genres_counter.most_common(3)]
         top_directors = [director_id for director_id, _ in directors_counter.most_common(2)]
         top_actors = [actor_id for actor_id, _ in actors_counter.most_common(3)]
@@ -121,14 +112,12 @@ class RecommendationController:
         top_genres, top_directors, top_actors, watchlist_ids = RecommendationController.get_user_preferences(user_id)
         
         if not top_genres:
-            # Si pas de préférences, retourner des films populaires
             return RecommendationController._get_popular_movies(api_key, watchlist_ids, limit)
         
         base_url = "https://api.themoviedb.org/3/discover/movie"
         recommended_movies = []
         seen_ids = set(watchlist_ids)
         
-        # Stratégie 1: Films avec genres similaires ET réalisateurs communs (priorité haute)
         if top_directors:
             for director_id in top_directors[:2]:
                 for genre_id in top_genres[:2]:
@@ -150,7 +139,6 @@ class RecommendationController:
                 if len(recommended_movies) >= limit:
                     break
         
-        # Stratégie 2: Films avec genres similaires ET acteurs communs
         if len(recommended_movies) < limit and top_actors:
             for actor_id in top_actors[:2]:
                 for genre_id in top_genres[:2]:
@@ -172,7 +160,6 @@ class RecommendationController:
                 if len(recommended_movies) >= limit:
                     break
         
-        # Stratégie 3: Films similaires aux favoris (API TMDB similar)
         if len(recommended_movies) < limit:
             from models import Commentaire
             watchlist = WatchlistController.get_user_watchlist(user_id)
@@ -181,7 +168,7 @@ class RecommendationController:
                 if item.score_user and item.score_user > 3
             ]
             
-            for item in highly_rated[:3]:  # Top 3 favoris
+            for item in highly_rated[:3]:
                 if len(recommended_movies) >= limit:
                     break
                 movies = RecommendationController._get_similar_movies(
@@ -194,7 +181,6 @@ class RecommendationController:
                         if len(recommended_movies) >= limit:
                             break
         
-        # Stratégie 4: Films avec genres similaires uniquement
         if len(recommended_movies) < limit:
             for genre_id in top_genres:
                 movies = RecommendationController._discover_movies(
@@ -212,7 +198,6 @@ class RecommendationController:
                 if len(recommended_movies) >= limit:
                     break
         
-        # Si on n'a pas assez, compléter avec des films populaires
         if len(recommended_movies) < limit:
             popular = RecommendationController._get_popular_movies(
                 api_key, seen_ids, limit - len(recommended_movies)
@@ -229,7 +214,7 @@ class RecommendationController:
             "language": "fr-FR",
             "sort_by": "popularity.desc",
             "page": 1,
-            "primary_release_date.lte": "2025-12-31",  # Films sortis jusqu'à 2025
+            "primary_release_date.lte": "2025-12-31",
         }
         
         if genre_ids:
@@ -242,7 +227,7 @@ class RecommendationController:
             params["with_cast"] = str(actor_id)
         
         try:
-            response = requests.get(base_url, params=params, timeout=3)  # Timeout réduit
+            response = requests.get(base_url, params=params, timeout=3)
             response.raise_for_status()
             data = response.json()
             movies = data.get("results", [])
@@ -254,13 +239,12 @@ class RecommendationController:
                     continue
                 
                 poster_path = movie.get("poster_path")
-                if not poster_path:  # Ignorer les films sans affiche
+                if not poster_path:
                     continue
                 
                 release_date = movie.get("release_date", "")
                 year = release_date.split("-")[0] if release_date else None
                 
-                # Vérifier que le film est sorti avant 2026
                 if release_date:
                     try:
                         from datetime import datetime
@@ -301,7 +285,7 @@ class RecommendationController:
                     "language": "fr-FR",
                     "page": 1,
                 },
-                timeout=3,  # Timeout réduit
+                timeout=3,
             )
             response.raise_for_status()
             data = response.json()
@@ -320,7 +304,6 @@ class RecommendationController:
                 release_date = movie.get("release_date", "")
                 year = release_date.split("-")[0] if release_date else None
                 
-                # Vérifier que le film est sorti avant 2026
                 if release_date:
                     try:
                         from datetime import datetime
@@ -363,7 +346,7 @@ class RecommendationController:
                     "page": 1,
                     "primary_release_date.lte": "2025-12-31",
                 },
-                timeout=3,  # Timeout réduit
+                timeout=3,
             )
             response.raise_for_status()
             data = response.json()

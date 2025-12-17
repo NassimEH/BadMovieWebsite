@@ -18,7 +18,6 @@ class WatchlistController:
 
         film = Film.query.get(tmdb_id)
         if not film:
-            # Conversion et création
             release_date = movie_data.get('release_date')
             date_obj = None
             if release_date:
@@ -33,10 +32,8 @@ class WatchlistController:
                 minutes = int(runtime)
                 duration_obj = time(hour=minutes // 60, minute=minutes % 60)
 
-            # Récupération de l'image avec gestion des URLs complètes
             image_url = movie_data.get('image', '')
             if image_url and not image_url.startswith('http'):
-                # Si l'URL n'est pas complète, on essaie de la compléter
                 if image_url.startswith('/'):
                     image_url = 'https://image.tmdb.org' + image_url
                 elif not image_url.startswith('https://'):
@@ -57,10 +54,8 @@ class WatchlistController:
                 db.session.rollback()
                 return None
         else:
-            # Si le film existe, mettre à jour l'image si une nouvelle image valide est fournie
             image_url = movie_data.get('image', '')
             if image_url and not image_url.startswith('http'):
-                # Si l'URL n'est pas complète, on essaie de la compléter
                 if image_url.startswith('/'):
                     image_url = 'https://image.tmdb.org' + image_url
                 elif not image_url.startswith('https://'):

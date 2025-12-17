@@ -27,7 +27,6 @@ class MovieController:
         if not api_key:
             raise ValueError("Clé API TMDB manquante.")
 
-        # Appel à l'API TMDB
         url = f"https://api.themoviedb.org/3/movie/{tmdb_id}"
         params = {"api_key": api_key, "language": "fr-FR"}
         
@@ -37,7 +36,6 @@ class MovieController:
             
         data = response.json()
 
-        # Traitement des données
         release_date = None
         if data.get('release_date'):
             try:

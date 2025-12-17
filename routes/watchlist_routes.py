@@ -27,7 +27,6 @@ def add_to_watchlist():
 @login_required
 def set_watched():
     data = request.get_json()
-    # Vérifier si le film est à partir de 2026
     release_date = data.get('release_date', '')
     if release_date:
         try:
@@ -40,7 +39,6 @@ def set_watched():
         except (ValueError, TypeError):
             pass
     
-    # data contient les infos du film + 'watched' (true/false)
     status = data.get('watched', False)
     success = WatchlistController.update_watched(current_user.ID_user, data, status)
     return jsonify({"success": success})
@@ -49,7 +47,6 @@ def set_watched():
 @login_required
 def rate_movie():
     data = request.get_json()
-    # Vérifier si le film est à partir de 2026
     release_date = data.get('release_date', '')
     if release_date:
         try:
@@ -62,12 +59,10 @@ def rate_movie():
         except (ValueError, TypeError):
             pass
     
-    # data contient les infos du film + 'score' (int)
     score = data.get('score')
     success = WatchlistController.update_score(current_user.ID_user, data, score)
     
     if success:
-        # Récupérer l'état mis à jour pour le retourner
         from models import Commentaire
         try:
             tmdb_id = int(data.get('tmdb_id'))
@@ -92,7 +87,6 @@ def save_review():
     """API pour sauvegarder une critique."""
     data = request.get_json()
     
-    # Vérifier si le film est à partir de 2026
     release_date = data.get('release_date', '')
     if release_date:
         try:
@@ -107,7 +101,6 @@ def save_review():
     
     review_text = data.get('review', '').strip()
     
-    # Si la critique est vide, on la supprime
     if not review_text:
         review_text = None
     
@@ -137,13 +130,11 @@ def get_filtered_watchlist():
     from models import Commentaire, Film
     from sqlalchemy.orm import joinedload
     
-    filter_status = request.args.get('status', 'all')  # 'all', 'watched', 'towatch'
-    sort_by = request.args.get('sort', 'date')  # 'date', 'rating-asc', 'rating-desc', 'title-asc', 'title-desc'
+    filter_status = request.args.get('status', 'all')
+    sort_by = request.args.get('sort', 'date')
     
-    # Charger les commentaires avec les films en une seule requête
     watchlist = Commentaire.query.options(joinedload(Commentaire.film)).filter_by(ID_user=current_user.ID_user).all()
     
-    # Filtrer par statut
     filtered = []
     for item in watchlist:
         if filter_status == 'all':
@@ -153,20 +144,15 @@ def get_filtered_watchlist():
         elif filter_status == 'towatch' and not item.watched:
             filtered.append(item)
     
-    # Trier
     if sort_by == 'rating-asc':
-        # Trier par note croissante, les films sans note en dernier
         filtered.sort(key=lambda x: (x.score_user if x.score_user is not None else 999, x.film.name_movie.lower()))
     elif sort_by == 'rating-desc':
-        # Trier par note décroissante, les films sans note en dernier
         filtered.sort(key=lambda x: (x.score_user if x.score_user is not None else -1, x.film.name_movie.lower()), reverse=True)
     elif sort_by == 'title-asc':
         filtered.sort(key=lambda x: x.film.name_movie.lower())
     elif sort_by == 'title-desc':
         filtered.sort(key=lambda x: x.film.name_movie.lower(), reverse=True)
-    # 'date' est le tri par défaut (ordre d'ajout, pas de tri supplémentaire)
     
-    # Formater les résultats
     formatted = []
     for item in filtered:
         year = None
@@ -181,11 +167,8 @@ def get_filtered_watchlist():
             else:
                 duration = str(item.film.duration)
         
-        # Récupérer l'image du film, s'assurer qu'elle n'est pas vide
-        # Si l'image est vide ou semble être l'image par défaut, essayer de la récupérer depuis TMDB
         film_image = item.film.image if item.film.image and item.film.image.strip() else ""
         
-        # Si l'image est vide ou semble être l'image par défaut de Little Mermaid, récupérer depuis TMDB
         if not film_image or 'the-little-mermaid' in film_image.lower():
             try:
                 import os
@@ -213,7 +196,6 @@ def get_filtered_watchlist():
                             except Exception:
                                 db.session.rollback()
             except Exception:
-                # En cas d'erreur, garder l'image vide
                 pass
         
         formatted.append({

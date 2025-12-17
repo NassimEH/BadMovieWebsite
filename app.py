@@ -8,18 +8,15 @@ from routes.watchlist_routes import watchlist_bp
 from routes.settings_routes import settings_bp
 from models import User
 
-# Création de l'application Flask
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# Initialisation des extensions
 db.init_app(app)
 login_manager.init_app(app)
 login_manager.login_view = 'auth.login'
 login_manager.login_message = 'Veuillez vous connecter pour accéder à cette page.'
 login_manager.login_message_category = 'info'
 
-# Callback pour Flask-Login
 @login_manager.user_loader
 def load_user(user_id):
     """Charge un utilisateur depuis la base de données."""
