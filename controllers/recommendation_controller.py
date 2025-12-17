@@ -108,6 +108,12 @@ class RecommendationController:
             logger.error("TMDB_API_KEY manquante")
             return []
         
+        # Vérifier si la watchlist est vide
+        watchlist = WatchlistController.get_user_watchlist(user_id)
+        if not watchlist or len(watchlist) == 0:
+            # Si la watchlist est vide, retourner des films aléatoires
+            return RecommendationController._get_random_movies(api_key, limit)
+        
         # Récupérer les préférences
         top_genres, top_directors, top_actors, watchlist_ids = RecommendationController.get_user_preferences(user_id)
         
@@ -383,4 +389,77 @@ class RecommendationController:
         except requests.RequestException as e:
             logger.warning(f"Erreur lors de la récupération de films populaires: {str(e)}")
             return []
+    
+    @staticmethod
+    def _get_random_movies(api_key, limit=20):
+        """Récupère des films aléatoires en mélangeant plusieurs pages."""
+        import random
+        try:
+            # Récupérer plusieurs pages pour avoir plus de variété
+            all_movies = []
+            max_pages = min(10, 500)  # Limiter à 10 pages pour éviter trop de requêtes
+            
+            for page in range(1, max_pages + 1):
+                url = "https://api.themoviedb.org/3/discover/movie"
+                response = requests.get(
+                    url,
+                    params={
+                        "api_key": api_key,
+                        "language": "fr-FR",
+                        "sort_by": "popularity.desc",
+                        "page": page,
+                        "primary_release_date.lte": "2025-12-31",
+                    },
+                    timeout=3,
+                )
+                response.raise_for_status()
+                data = response.json()
+                movies = data.get("results", [])
+                
+                if not movies:
+                    break
+                
+                for movie in movies:
+                    movie_id = movie.get("id")
+                    poster_path = movie.get("poster_path")
+                    if not poster_path:
+                        continue
+                    
+                    release_date = movie.get("release_date", "")
+                    year = release_date.split("-")[0] if release_date else None
+                    
+                    if release_date:
+                        try:
+                            from datetime import datetime
+                            release = datetime.strptime(release_date, "%Y-%m-%d")
+                            if release.year > 2025:
+                                continue
+                        except ValueError:
+                            pass
+                    
+                    all_movies.append({
+                        "id": movie_id,
+                        "tmdb_id": movie_id,
+                        "title": movie.get("title") or movie.get("name") or "Titre inconnu",
+                        "image": f"https://image.tmdb.org/t/p/w500{poster_path}",
+                        "year": year,
+                        "release_date": release_date,
+                        "vote_average": movie.get("vote_average", 0),
+                        "popularity": movie.get("popularity", 0),
+                    })
+                
+                # Si on a assez de films, on peut s'arrêter
+                if len(all_movies) >= limit * 3:  # Récupérer 3x plus pour avoir de la variété
+                    break
+            
+            # Mélanger aléatoirement et retourner le nombre demandé
+            random.shuffle(all_movies)
+            return all_movies[:limit]
+        except requests.RequestException as e:
+            logger.warning(f"Erreur lors de la récupération de films aléatoires: {str(e)}")
+            # Fallback sur les films populaires en cas d'erreur
+            return RecommendationController._get_popular_movies(api_key, None, limit)
+        except Exception as e:
+            logger.error(f"Erreur inattendue lors de la récupération de films aléatoires: {str(e)}")
+            return RecommendationController._get_popular_movies(api_key, None, limit)
 

@@ -4101,6 +4101,13 @@ header {
   }
 }
 
+/* ==================== WATCHLIST CONTENT ==================== */
+#watchlist-content {
+  position: relative;
+  width: 100%;
+  min-height: 60vh;
+}
+
 /* ==================== WATCHLIST EMPTY STATE ==================== */
 .watchlist-empty-container {
   position: relative;
@@ -4111,7 +4118,8 @@ header {
   align-items: center;
   justify-content: center;
   padding: 80px 50px;
-  margin-top: 40px;
+  margin: 40px auto 0;
+  text-align: center;
 }
 
 .watchlist-empty-card {
