@@ -707,12 +707,21 @@ def api_recommendations():
     """API pour récupérer les recommandations personnalisées."""
     try:
         from controllers.recommendation_controller import RecommendationController
+        from controllers.watchlist_controller import WatchlistController
         limit = int(request.args.get('limit', 20))
+        
+        # Vérifier si la watchlist est vide pour déterminer si les recommandations sont aléatoires
+        watchlist = WatchlistController.get_user_watchlist(current_user.ID_user)
+        is_random = not watchlist or len(watchlist) == 0
+        
         recommendations = RecommendationController.get_recommendations(
             current_user.ID_user,
             limit=limit
         )
-        return jsonify({"movies": recommendations})
+        return jsonify({
+            "movies": recommendations,
+            "is_random": is_random
+        })
     except ImportError as e:
         logger.error("Erreur d'importation du contrôleur de recommandations: %s", str(e), exc_info=True)
         return jsonify({"error": "Erreur de configuration du serveur", "movies": []}), 500

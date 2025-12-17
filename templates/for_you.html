@@ -52,6 +52,7 @@
   <div class="container">
     <div class="category">
       <h2>Recommandations personnalisées</h2>
+      <div id="random-recommendations-notice" style="display: none;"></div>
       <div id="recommendations-container" class="category-content-placeholder">
         <div class="loading-spinner">
           <i class="fa fa-spinner" aria-hidden="true"></i>
@@ -82,6 +83,33 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .then(data => {
       const movies = data.movies || [];
+      const isRandom = data.is_random || false;
+      const noticeDiv = document.getElementById('random-recommendations-notice');
+      
+      // Afficher le message si les recommandations sont aléatoires
+      if (isRandom) {
+        noticeDiv.style.display = 'block';
+        noticeDiv.innerHTML = `
+          <div class="random-recommendations-notice">
+            <div class="random-recommendations-notice-content">
+              <i class="fa fa-info-circle random-recommendations-notice-icon" aria-hidden="true"></i>
+              <div class="random-recommendations-notice-text">
+                <p class="random-recommendations-notice-title">
+                  Recommandations aléatoires
+                </p>
+                <p class="random-recommendations-notice-message">
+                  Votre watchlist est vide. Nous vous proposons une sélection aléatoire pour découvrir notre catalogue.
+                  <a href="/movies" class="random-recommendations-notice-link">
+                    Explorez tous nos films
+                  </a>
+                </p>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        noticeDiv.style.display = 'none';
+      }
       
       if (movies.length === 0) {
         container.innerHTML = `

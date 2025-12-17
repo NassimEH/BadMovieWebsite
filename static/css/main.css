@@ -4219,6 +4219,75 @@ header {
   font-size: 1.2em;
 }
 
+/* Message pour recommandations aléatoires */
+.random-recommendations-notice {
+  background: rgba(0, 102, 255, 0.1);
+  border: 2px solid rgba(0, 102, 255, 0.3);
+  border-radius: 12px;
+  padding: 20px 30px;
+  margin-bottom: 30px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.random-recommendations-notice:hover {
+  border-color: rgba(0, 102, 255, 0.5);
+  background: rgba(0, 102, 255, 0.15);
+  box-shadow: 0 5px 20px rgba(0, 102, 255, 0.2);
+}
+
+.random-recommendations-notice-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.random-recommendations-notice-icon {
+  font-size: 1.5em;
+  color: var(--primary);
+  text-shadow: 0 0 10px rgba(0, 102, 255, 0.5);
+  filter: drop-shadow(0 0 5px rgba(0, 102, 255, 0.4));
+}
+
+.random-recommendations-notice-text {
+  flex: 1;
+  min-width: 250px;
+}
+
+.random-recommendations-notice-title {
+  color: #ffffff;
+  font-size: 1.1em;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.random-recommendations-notice-message {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.95em;
+  margin: 0;
+  line-height: 1.6;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.random-recommendations-notice-link {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+  margin-left: 5px;
+  text-shadow: 0 0 10px rgba(0, 102, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+.random-recommendations-notice-link:hover {
+  text-shadow: 0 0 15px rgba(0, 102, 255, 0.8);
+  color: #3399ff;
+}
+
 /* Styles pour les cartes de films dans la watchlist */
 .watchlist-movies-grid {
   position: relative;
