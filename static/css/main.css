@@ -4120,6 +4120,10 @@ header {
   padding: 80px 50px;
   margin: 40px auto 0;
   text-align: center;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .watchlist-empty-card {
