@@ -1,9 +1,19 @@
+"""
+Authentication routes module for BadMovie application.
+
+This module contains all authentication-related routes including:
+- User login
+- User registration (sign-up)
+- User logout
+
+All routes are registered under the 'auth' blueprint with URL prefix '/auth'.
+"""
 import re
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from werkzeug.security import check_password_hash, generate_password_hash
+from flask_login import login_user, login_required, logout_user
 from models import User
 from extensions import db
-from flask_login import login_user, login_required, logout_user
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -13,7 +23,8 @@ def login():
 
     If the request method is POST, it retrieves the username and password from the form.
     It checks if the user exists and, if confirmed, verifies the password.
-    Upon successful login, it flashes a success message, logs in the user, and redirects to the home page.
+    Upon successful login, it flashes a success message, logs in the user, and redirects to the 
+    home page.
 
     Returns:
         Flask response or rendered template: Redirects to the home page upon successful login
@@ -47,8 +58,8 @@ def sign_up():
     and redirects the user to the login page after successful registration.
 
     Returns:
-        Flask response or rendered template: Redirects to the login page upon successful registration
-        or renders the sign-up page with error messages.
+        Flask response or rendered template: Redirects to the login page upon successful 
+        registration or renders the sign-up page with error messages.
     """
 
     if request.method == 'POST':
@@ -65,7 +76,7 @@ def sign_up():
         if user:
             flash("Compte déjà existant", category='error')
         elif email:
-            flash(f"Email déjà attribué au compte {email.nom}", category='error')
+            flash("Email déjà attribué au compte %s" % email.nom, category='error')
         elif not re.match(email_pattern, _email):
             flash('Format d\'email invalide', category='error')
         elif len(_email) < 4:
@@ -86,7 +97,7 @@ def sign_up():
                 db.session.commit()
                 flash('Compte créé avec succès! Vous pouvez maintenant vous connecter.', category='success')
                 return redirect(url_for('auth.login'))
-            except Exception as e:
+            except (ValueError, TypeError, AttributeError) as e:
                 db.session.rollback()
                 flash('Erreur lors de la création du compte. Veuillez réessayer.', category='error')
     return render_template("auth/register.html")

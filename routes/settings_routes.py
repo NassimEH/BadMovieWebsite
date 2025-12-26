@@ -90,7 +90,6 @@ def upload_profile_picture():
     if error:
         return jsonify({"success": False, "message": error}), 400
     
-    # Mettre à jour le chemin dans la base de données
     success, message = UserController.update_profile_picture(current_user.ID_user, filepath)
     
     if success:

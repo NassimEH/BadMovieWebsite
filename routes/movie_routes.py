@@ -1,10 +1,11 @@
 import os
 import logging
-import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from flask import Blueprint, render_template, jsonify, current_app, abort
-from flask_login import current_user, login_required  
-from models import Commentaire        
+from datetime import datetime
+import requests 
+from flask import Blueprint, render_template, jsonify, current_app, abort, request
+from flask_login import current_user, login_required
+from models import Commentaire
 
 movie_bp = Blueprint('movies', __name__, url_prefix='/movies')
 logger = logging.getLogger(__name__)
@@ -48,7 +49,6 @@ def api_movies_by_category():
             logger.error("TMDB_API_KEY manquante dans l'environnement")
             return jsonify({"error": "TMDB_API_KEY manquante dans l'environnement"}), 500
 
-        # Mapping de nos catégories vers les IDs de genre TMDB
         genre_map = {
             "Action": 28,
             "Horreur": 27,
@@ -61,14 +61,13 @@ def api_movies_by_category():
             "Romance": 10749,
             "Animation": 16,
             "Documentaire": 99,
-            "Biographie": 36,  # approximatif : Histoire
+            "Biographie": 36,
         }
 
         base_url = "https://api.themoviedb.org/3/discover/movie"
         grouped = {}
 
         def fetch_category_movies(category, genre_id):
-            """Fonction pour récupérer les films d'une catégorie."""
             params = {
                 "api_key": api_key,
                 "language": "fr-FR",
@@ -82,9 +81,8 @@ def api_movies_by_category():
                 response.raise_for_status()
                 data = response.json()
                 movies = data.get("results", [])
-                
                 category_movies = []
-                for movie in movies[:10]:  # on limite pour éviter de surcharger l'UI
+                for movie in movies[:10]:
                     try:
                         poster_path = movie.get("poster_path")
                         release_date = movie.get("release_date") or ""
@@ -95,7 +93,7 @@ def api_movies_by_category():
                                 "id": movie.get("id"),
                                 "tmdb_id": movie.get("id"),
                                 "title": movie.get("title") or movie.get("name"),
-                                "image": f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else None,
+                                "image": "https://image.tmdb.org/t/p/w500%s" % poster_path if poster_path else None,
                                 "year": year,
                                 "release_date": release_date,
                                 "duration": None,
@@ -103,41 +101,37 @@ def api_movies_by_category():
                                 "category": category,
                             }
                         )
-                    except Exception as e:
-                        logger.warning(f"Erreur lors du traitement d'un film dans {category}: {str(e)}")
+                    except (KeyError, ValueError, TypeError) as e:
+                        logger.warning("Erreur lors du traitement d'un film dans %s: %s", category, str(e))
                         continue
-                
+
                 return category, category_movies
             except requests.exceptions.Timeout:
-                logger.warning(f"Timeout lors de la récupération des films pour {category}")
+                logger.warning("Timeout lors de la récupération des films pour %s", category)
                 return category, []
             except requests.exceptions.HTTPError as e:
-                logger.error(f"Erreur HTTP pour {category}: {e.response.status_code}")
+                logger.error("Erreur HTTP pour %s: %s", category, e.response.status_code)
                 return category, []
             except requests.RequestException as e:
-                logger.error(f"Erreur de requête pour {category}: {str(e)}")
-                return category, []
-            except Exception as e:
-                logger.error(f"Erreur inattendue pour {category}: {str(e)}")
+                logger.error("Erreur de requête pour %s: %s", category, str(e))
                 return category, []
 
-        # Exécution parallèle des requêtes avec ThreadPoolExecutor
         with ThreadPoolExecutor(max_workers=12) as executor:
-            # Soumettre toutes les tâches en parallèle
             future_to_category = {
-                executor.submit(fetch_category_movies, category, genre_id): category 
+                executor.submit(fetch_category_movies, category, genre_id): category
                 for category, genre_id in genre_map.items()
             }
-            
-            # Récupérer les résultats au fur et à mesure
             for future in as_completed(future_to_category):
                 category, movies = future.result()
                 grouped[category] = movies
 
         return jsonify(grouped)
-    except Exception as e:
-        logger.error(f"Erreur inattendue dans api_movies_by_category: {str(e)}", exc_info=True)
+    except (KeyError, ValueError, TypeError) as e:
+        logger.error("Erreur de traitement des données dans api_movies_by_category: %s", str(e), exc_info=True)
         return jsonify({"error": "Erreur serveur lors de la récupération des films"}), 500
+    except requests.RequestException as e:
+        logger.error("Erreur de connexion à l'API TMDB dans api_movies_by_category: %s", str(e), exc_info=True)
+        return jsonify({"error": "Erreur de connexion à l'API"}), 500
 
 
 @movie_bp.route('/api/filtered')
@@ -149,14 +143,12 @@ def api_filtered_movies():
             logger.error("TMDB_API_KEY manquante dans l'environnement")
             return jsonify({"error": "TMDB_API_KEY manquante dans l'environnement"}), 500
 
-        from flask import request
         search_query = request.args.get('search', '').strip()
         genre = request.args.get('genre', '').strip()
         year = request.args.get('year', '').strip()
         sort_by = request.args.get('sort', 'recent').strip()
         page = int(request.args.get('page', 1))
 
-        # Mapping des genres
         genre_map = {
             "action": 28,
             "horreur": 27,
@@ -172,7 +164,6 @@ def api_filtered_movies():
             "biographie": 36,
         }
 
-        # Mapping du tri
         sort_map = {
             "recent": "release_date.desc",
             "oldest": "release_date.asc",
@@ -183,10 +174,10 @@ def api_filtered_movies():
         }
 
         base_url = "https://api.themoviedb.org/3"
-        
+
         # Utiliser discover pour avoir plus de contrôle sur les filtres
-        url = f"{base_url}/discover/movie"
-        
+        url = "%s/discover/movie" % base_url
+
         # Tri par défaut : popularité
         default_sort = "popularity.desc"
         if sort_by == "recent":
@@ -194,22 +185,19 @@ def api_filtered_movies():
             sort_value = sort_map.get(sort_by, default_sort)
         else:
             sort_value = sort_map.get(sort_by, default_sort)
-        
+
         params = {
             "api_key": api_key,
             "language": "fr-FR",
             "sort_by": sort_value,
             "page": page,
-            # Filtrer pour ne montrer que les films déjà sortis (jusqu'en 2025)
             "primary_release_date.lte": "2025-12-31",
-            # Ne montrer que les films avec une affiche
             "with_poster": True,
         }
-        
-        # Ajouter le filtre de genre
+
         if genre and genre in genre_map:
             params["with_genres"] = genre_map[genre]
-        
+
         # Ajouter le filtre d'année
         if year:
             try:
@@ -230,7 +218,6 @@ def api_filtered_movies():
                 "query": search_query,
                 "page": page,
             }
-        # Si recherche avec filtres, on doit filtrer après la recherche
         if search_query and (genre or year):
             try:
                 search_response = requests.get(url, params=params, timeout=5)
@@ -238,39 +225,32 @@ def api_filtered_movies():
                 search_data = search_response.json()
                 all_movies = search_data.get("results", [])
                 
-                # Filtrer les résultats par genre, année, et affiche
                 filtered_movies = []
                 for movie in all_movies:
-                    # Ignorer les films sans affiche
                     if not movie.get("poster_path"):
                         continue
-                    
-                    # Filtrer par date de sortie (max 2025)
+
                     release_date = movie.get("release_date", "")
                     if release_date:
                         try:
-                            from datetime import datetime
                             release_dt = datetime.strptime(release_date, "%Y-%m-%d")
                             max_date = datetime(2025, 12, 31)
                             if release_dt > max_date:
-                                continue  # Ignorer les films futurs après 2025
+                                continue
                         except ValueError:
                             pass
-                    
-                    # Filtrer par genre
+
                     if genre and genre in genre_map:
                         movie_genres = movie.get("genre_ids", [])
                         if genre_map[genre] not in movie_genres:
                             continue
-                    
-                    # Filtrer par année
+
                     if year:
                         if not release_date or not release_date.startswith(year):
                             continue
-                    
+
                     filtered_movies.append(movie)
-                
-                # Appliquer le tri
+
                 if sort_by == "title-asc":
                     filtered_movies.sort(key=lambda x: (x.get("title") or x.get("name") or "").lower())
                 elif sort_by == "title-desc":
@@ -281,32 +261,28 @@ def api_filtered_movies():
                     filtered_movies.sort(key=lambda x: x.get("release_date", ""), reverse=True)
                 elif sort_by == "oldest":
                     filtered_movies.sort(key=lambda x: x.get("release_date", ""))
-                
-                # Pagination manuelle
+
                 per_page = 20
                 start_idx = (page - 1) * per_page
                 end_idx = start_idx + per_page
                 paginated_movies = filtered_movies[start_idx:end_idx]
-                
-                # Formater les résultats
+
                 formatted_movies = []
                 for movie in paginated_movies:
                     try:
                         poster_path = movie.get("poster_path")
                         release_date = movie.get("release_date") or ""
                         year_movie = release_date.split("-")[0] if release_date else None
-                        
-                        # Construire l'URL de l'image correctement
+
                         image_url = None
                         if poster_path:
                             if poster_path.startswith("http"):
                                 image_url = poster_path
                             elif poster_path.startswith("/"):
-                                image_url = f"https://image.tmdb.org/t/p/w500{poster_path}"
+                                image_url = "https://image.tmdb.org/t/p/w500%s" % poster_path
                             else:
-                                image_url = f"https://image.tmdb.org/t/p/w500/{poster_path}"
-                        
-                        # Récupérer les genres du film
+                                image_url = "https://image.tmdb.org/t/p/w500/%s" % poster_path
+
                         genre_names = []
                         if movie.get("genre_ids"):
                             genre_id_to_name = {
@@ -315,16 +291,16 @@ def api_filtered_movies():
                                 10749: "Romance", 16: "Animation", 99: "Documentaire", 36: "Biographie"
                             }
                             genre_names = [genre_id_to_name.get(gid, "") for gid in movie.get("genre_ids", [])[:2] if genre_id_to_name.get(gid)]
-                        
+
                         runtime = movie.get("runtime")
                         duration_str = None
                         if runtime:
                             hours = runtime // 60
                             minutes = runtime % 60
                             if hours > 0:
-                                duration_str = f"{hours}h{minutes:02d}min"
+                                duration_str = "%dh%02dmin" % (hours, minutes)
                             else:
-                                duration_str = f"{minutes}min"
+                                duration_str = "%dmin" % minutes
 
                         formatted_movies.append({
                             "id": movie.get("id"),
@@ -338,14 +314,13 @@ def api_filtered_movies():
                             "category": ", ".join(genre_names) if genre_names else "Autre",
                             "vote_average": movie.get("vote_average", 0),
                         })
-                    except Exception as e:
-                        logger.warning(f"Erreur lors du traitement d'un film: {str(e)}")
+                    except (KeyError, ValueError, TypeError, AttributeError) as e:
+                        logger.warning("Erreur lors du traitement d'un film: %s", str(e))
                         continue
-                
-                # Calculer le total de pages
+
                 total_filtered = len(filtered_movies)
                 total_pages = max(1, (total_filtered + per_page - 1) // per_page)
-                
+
                 return jsonify({
                     "movies": formatted_movies,
                     "total_pages": total_pages,
@@ -353,67 +328,55 @@ def api_filtered_movies():
                     "total_results": total_filtered
                 })
             except requests.RequestException as e:
-                logger.error(f"Erreur lors de la recherche: {str(e)}")
+                logger.error("Erreur lors de la recherche: %s", str(e))
                 return jsonify({"error": "Erreur lors de la recherche", "movies": [], "total_pages": 1, "current_page": 1}), 500
 
-        # Fonction pour filtrer et formater les films
         def filter_and_format_movies(movies_list):
-            """Filtre et formate une liste de films."""
             formatted = []
             for movie in movies_list:
-                # Filtrer les films sans affiche
                 if not movie.get("poster_path"):
                     continue
-                
-                # Filtrer les films futurs (après 2025)
+
                 release_date = movie.get("release_date", "")
                 if release_date:
                     try:
-                        from datetime import datetime
                         release_dt = datetime.strptime(release_date, "%Y-%m-%d")
                         max_date = datetime(2025, 12, 31)
                         if release_dt > max_date:
                             continue
                     except ValueError:
                         pass
-                
+
                 try:
                     poster_path = movie.get("poster_path")
                     release_date = movie.get("release_date") or ""
                     year_movie = release_date.split("-")[0] if release_date else None
-                    
-                    # Filtrer les films sans affiche ou avec date de sortie future
+
                     if not poster_path:
-                        continue  # Ignorer les films sans affiche
-                    
-                    # Vérifier que le film est déjà sorti (date <= aujourd'hui ou <= 2025)
+                        continue
+
                     if release_date:
                         try:
-                            from datetime import datetime
                             release_dt = datetime.strptime(release_date, "%Y-%m-%d")
                             max_date = datetime(2025, 12, 31)
                             if release_dt > max_date:
-                                continue  # Ignorer les films futurs après 2025
+                                continue
                         except ValueError:
-                            pass  # Si la date est invalide, on garde le film
-                    
-                    # Construire l'URL de l'image correctement
+                            pass
+
                     image_url = None
                     if poster_path:
-                        # S'assurer que le chemin ne commence pas déjà par http
                         if poster_path.startswith("http"):
                             image_url = poster_path
                         elif poster_path.startswith("/"):
-                            image_url = f"https://image.tmdb.org/t/p/w500{poster_path}"
+                            image_url = "https://image.tmdb.org/t/p/w500%s" % poster_path
                         else:
-                            image_url = f"https://image.tmdb.org/t/p/w500/{poster_path}"
-                    
-                    # Récupérer les genres
+                            image_url = "https://image.tmdb.org/t/p/w500/%s" % poster_path
+
                     genre_names = []
                     if movie.get("genres"):
                         genre_names = [g.get("name", "") for g in movie.get("genres", [])[:2]]
                     elif movie.get("genre_ids"):
-                        # Mapping des IDs de genres vers les noms
                         genre_id_to_name = {
                             28: "Action", 27: "Horreur", 14: "Fantastique", 878: "Science-Fiction",
                             18: "Drame", 35: "Comédie", 53: "Thriller", 10752: "Guerre",
@@ -421,16 +384,15 @@ def api_filtered_movies():
                         }
                         genre_names = [genre_id_to_name.get(gid, "") for gid in movie.get("genre_ids", [])[:2] if genre_id_to_name.get(gid)]
                     
-                    # Récupérer la durée si disponible
                     runtime = movie.get("runtime")
                     duration_str = None
                     if runtime:
                         hours = runtime // 60
                         minutes = runtime % 60
                         if hours > 0:
-                            duration_str = f"{hours}h{minutes:02d}min"
+                            duration_str = "%dh%02dmin" % (hours, minutes)
                         else:
-                            duration_str = f"{minutes}min"
+                            duration_str = "%dmin" % minutes
 
                     formatted.append({
                         "id": movie.get("id"),
@@ -444,31 +406,27 @@ def api_filtered_movies():
                         "category": ", ".join(genre_names) if genre_names else "Autre",
                         "vote_average": movie.get("vote_average", 0),
                     })
-                except Exception as e:
-                    logger.warning(f"Erreur lors du traitement d'un film: {str(e)}")
+                except (KeyError, ValueError, TypeError, AttributeError) as e:
+                    logger.warning("Erreur lors du traitement d'un film: %s", str(e))
                     continue
             return formatted
 
-        # Récupérer la page demandée
         try:
             response = requests.get(url, params=params, timeout=5)
             response.raise_for_status()
             data = response.json()
         except requests.RequestException as e:
-            logger.error(f"Erreur lors de la récupération des films filtrés: {str(e)}")
+            logger.error("Erreur lors de la récupération des films filtrés: %s", str(e))
             return jsonify({"error": "Erreur lors de la récupération des films", "movies": [], "total_pages": 1, "current_page": 1}), 500
 
         movies = data.get("results", [])
         total_pages = data.get("total_pages", 1)
         current_page = data.get("page", 1)
 
-        # Filtrer et formater les films de la page demandée
         formatted_movies = filter_and_format_movies(movies)
         
-        # Si la page est vide et qu'on est sur la dernière page, essayer de récupérer les pages précédentes
         if len(formatted_movies) == 0 and current_page == total_pages and current_page > 1:
-            # Essayer de récupérer les pages précédentes jusqu'à trouver des résultats
-            max_attempts = min(5, current_page - 1)  # Limiter à 5 tentatives ou jusqu'à la page 1
+            max_attempts = min(5, current_page - 1)
             for attempt in range(1, max_attempts + 1):
                 prev_page = current_page - attempt
                 if prev_page < 1:
@@ -484,15 +442,13 @@ def api_filtered_movies():
                     prev_formatted = filter_and_format_movies(prev_movies)
                     
                     if len(prev_formatted) > 0:
-                        # On a trouvé des résultats, utiliser cette page
                         formatted_movies = prev_formatted
                         current_page = prev_page
-                        # Ajuster total_pages pour refléter la dernière page valide
                         total_pages = prev_page
-                        logger.info(f"Page {current_page} vide, utilisation de la page {prev_page} avec {len(prev_formatted)} films")
+                        logger.info("Page %s vide, utilisation de la page %s avec %s films", current_page, prev_page, len(prev_formatted))
                         break
                 except requests.RequestException as e:
-                    logger.warning(f"Erreur lors de la récupération de la page {prev_page}: {str(e)}")
+                    logger.warning("Erreur lors de la récupération de la page %s: %s", prev_page, str(e))
                     continue
 
         return jsonify({
@@ -501,9 +457,12 @@ def api_filtered_movies():
             "current_page": current_page,
             "total_results": data.get("total_results", 0)
         })
-    except Exception as e:
-        logger.error(f"Erreur inattendue dans api_filtered_movies: {str(e)}", exc_info=True)
-        return jsonify({"error": "Erreur serveur lors de la récupération des films", "movies": [], "total_pages": 1, "current_page": 1}), 500
+    except (KeyError, ValueError, TypeError, AttributeError) as e:
+        logger.error("Erreur de traitement des données dans api_filtered_movies: %s", str(e), exc_info=True)
+        return jsonify({"error": "Erreur de traitement des données", "movies": [], "total_pages": 1, "current_page": 1}), 500
+    except requests.RequestException as e:
+        logger.error("Erreur de connexion à l'API TMDB dans api_filtered_movies: %s", str(e), exc_info=True)
+        return jsonify({"error": "Erreur de connexion à l'API", "movies": [], "total_pages": 1, "current_page": 1}), 500
 
 
 @movie_bp.route('/api/coming-soon')
@@ -515,26 +474,20 @@ def api_coming_soon():
             logger.error("TMDB_API_KEY manquante dans l'environnement")
             return jsonify({"error": "TMDB_API_KEY manquante dans l'environnement"}), 500
 
-        from datetime import datetime
-        
         base_url = "https://api.themoviedb.org/3/discover/movie"
         years = [2026, 2027, 2028, 2029, 2030]
-        # Initialiser toutes les années avec des listes vides
         grouped = {str(year): [] for year in years}
-        
-        # Date d'aujourd'hui pour récupérer les films à venir
+
         today = datetime.now().strftime("%Y-%m-%d")
-        # Date maximale (fin 2030)
         max_date = "2030-12-31"
 
         def fetch_future_movies():
-            """Fonction pour récupérer tous les films à venir."""
             all_movies = []
             page = 1
-            max_pages = 8  # Réduit de 20 à 8 pages pour améliorer les performances
+            max_pages = 20  # Augmenter à 20 pages pour avoir plus de films
             
-            # Objectif : avoir au moins 8 films par année avant de s'arrêter
-            min_films_per_year = 8
+            # Objectif : avoir au moins 10 films par année avant de s'arrêter
+            min_films_per_year = 10
             
             while page <= max_pages:
                 params = {
@@ -552,12 +505,12 @@ def api_coming_soon():
                     response.raise_for_status()
                     data = response.json()
                     movies = data.get("results", [])
-                    
+
                     if not movies:
                         break
-                    
+
                     all_movies.extend(movies)
-                    
+
                     # Vérifier si on a assez de films pour chaque année
                     # Vérifier plus tôt (après 100 films au lieu de 300) pour s'arrêter plus rapidement
                     if len(all_movies) >= 100:
@@ -565,57 +518,51 @@ def api_coming_soon():
                         for movie in all_movies:
                             release_date = movie.get("release_date", "")
                             if release_date:
-                                try:
-                                    year = int(release_date.split("-")[0])
-                                    if year in years:
-                                        if str(year) not in temp_grouped:
-                                            temp_grouped[str(year)] = 0
-                                        temp_grouped[str(year)] += 1
-                                except:
-                                    pass
-                        
-                        # Vérifier qu'on a toutes les années représentées
+                                year = int(release_date.split("-")[0])
+                                if year in years:
+                                    if str(year) not in temp_grouped:
+                                        temp_grouped[str(year)] = 0
+                                    temp_grouped[str(year)] += 1
+                            
+
                         years_present = [y for y in years if str(y) in temp_grouped]
-                        
+
                         # Si toutes les années sont présentes ET qu'elles ont toutes au moins 8 films, on peut arrêter
                         if len(years_present) == len(years):
                             min_films = min([temp_grouped[str(y)] for y in years])
                             # S'assurer qu'on a au moins 8 films pour chaque année avant d'arrêter
                             if min_films >= min_films_per_year:
                                 break
-                    
-                    # Si on a atteint la dernière page, arrêter
+  
                     total_pages = data.get("total_pages", 1)
                     if page >= total_pages:
                         break
-                    
+
                     page += 1
                 except requests.exceptions.Timeout:
-                    logger.warning(f"Timeout lors de la récupération de la page {page}")
+                    logger.warning("Timeout lors de la récupération de la page %s", page)
                     break
                 except requests.exceptions.HTTPError as e:
-                    logger.error(f"Erreur HTTP pour la page {page}: {e.response.status_code}")
+                    logger.error("Erreur HTTP pour la page %s: %s", page, e.response.status_code)
                     break
                 except requests.RequestException as e:
-                    logger.error(f"Erreur de requête pour la page {page}: {str(e)}")
+                    logger.error("Erreur de requête pour la page %s: %s", page, str(e))
                     break
-                except Exception as e:
-                    logger.error(f"Erreur inattendue pour la page {page}: {str(e)}")
+                except (KeyError, ValueError, TypeError) as e:
+                    logger.error("Erreur de traitement des données pour la page %s: %s", page, str(e))
                     break
-            
+  
             return all_movies
 
         try:
             movies = fetch_future_movies()
-            
-            # Traiter tous les films et les grouper par année (sans limite pendant le traitement)
+
             for movie in movies:
                 try:
                     poster_path = movie.get("poster_path")
-                    # Ignorer les films sans affiche
                     if not poster_path:
                         continue
-                    
+
                     release_date = movie.get("release_date") or ""
                     if not release_date:
                         continue
@@ -625,22 +572,19 @@ def api_coming_soon():
                         year_movie = int(release_date.split("-")[0])
                     except (ValueError, IndexError):
                         continue
-                    
-                    # Ne garder que les années qui nous intéressent (2026-2030)
+
                     if year_movie not in years:
                         continue
 
-                    # Construire l'URL de l'image
                     image_url = None
                     if poster_path:
                         if poster_path.startswith("http"):
                             image_url = poster_path
                         elif poster_path.startswith("/"):
-                            image_url = f"https://image.tmdb.org/t/p/w500{poster_path}"
+                            image_url = "https://image.tmdb.org/t/p/w500%s" % poster_path
                         else:
-                            image_url = f"https://image.tmdb.org/t/p/w500/{poster_path}"
-                    
-                    # Récupérer les genres
+                            image_url = "https://image.tmdb.org/t/p/w500/%s" % poster_path
+   
                     genre_names = []
                     if movie.get("genre_ids"):
                         genre_id_to_name = {
@@ -649,16 +593,16 @@ def api_coming_soon():
                             10749: "Romance", 16: "Animation", 99: "Documentaire", 36: "Biographie"
                         }
                         genre_names = [genre_id_to_name.get(gid, "") for gid in movie.get("genre_ids", [])[:2] if genre_id_to_name.get(gid)]
-                    
+
                     runtime = movie.get("runtime")
                     duration_str = None
                     if runtime:
                         hours = runtime // 60
                         minutes = runtime % 60
                         if hours > 0:
-                            duration_str = f"{hours}h{minutes:02d}min"
+                            duration_str = "%dh%02dmin" % (hours, minutes)
                         else:
-                            duration_str = f"{minutes}min"
+                            duration_str = "%dmin" % minutes
 
                     movie_data = {
                         "id": movie.get("id"),
@@ -671,10 +615,10 @@ def api_coming_soon():
                         "runtime": runtime,
                         "category": ", ".join(genre_names) if genre_names else "Autre",
                         "vote_average": movie.get("vote_average", 0),
-                    }               
+                    }     
                     grouped[str(year_movie)].append(movie_data)
-                except Exception as e:
-                    logger.warning(f"Erreur lors du traitement d'un film: {str(e)}")
+                except (KeyError, ValueError, TypeError, AttributeError) as e:
+                    logger.warning("Erreur lors du traitement d'un film: %s", str(e))
                     continue
             # Limiter à 12 films par année après avoir tout traité pour améliorer les performances
             # Mais s'assurer qu'on a au moins quelques films pour chaque année
@@ -685,19 +629,24 @@ def api_coming_soon():
                 elif len(grouped[str(year)]) < 5:
                     # Garder tous les films disponibles pour cette année
                     pass
-        except Exception as e:
-            logger.error(f"Erreur lors de la récupération des films à venir: {str(e)}")
+        except (KeyError, ValueError, TypeError) as e:
+            logger.error("Erreur de traitement des données lors de la récupération des films à venir: %s", str(e))
+            # Les années restent avec des listes vides (déjà initialisées)
+        except requests.RequestException as e:
+            logger.error("Erreur de connexion à l'API lors de la récupération des films à venir: %s", str(e))
             # Les années restent avec des listes vides (déjà initialisées)
 
-        # S'assurer que toutes les années sont présentes dans la réponse
         for year in years:
             if str(year) not in grouped:
                 grouped[str(year)] = []
 
         return jsonify(grouped)
-    except Exception as e:
-        logger.error(f"Erreur inattendue dans api_coming_soon: {str(e)}", exc_info=True)
-        return jsonify({"error": "Erreur serveur lors de la récupération des films à venir"}), 500
+    except (KeyError, ValueError, TypeError) as e:
+        logger.error("Erreur de traitement des données dans api_coming_soon: %s", str(e), exc_info=True)
+        return jsonify({"error": "Erreur de traitement des données"}), 500
+    except requests.RequestException as e:
+        logger.error("Erreur de connexion à l'API TMDB dans api_coming_soon: %s", str(e), exc_info=True)
+        return jsonify({"error": "Erreur de connexion à l'API"}), 500
 
 
 @movie_bp.route('/<int:tmdb_id>')
@@ -710,9 +659,8 @@ def movie_detail(tmdb_id: int):
     base_url = "https://api.themoviedb.org/3/movie"
 
     try:
-        # Détails du film
         detail_resp = requests.get(
-            f"{base_url}/{tmdb_id}",
+            "%s/%s" % (base_url, tmdb_id),
             params={
                 "api_key": api_key,
                 "language": "fr-FR",
@@ -725,24 +673,21 @@ def movie_detail(tmdb_id: int):
     except requests.RequestException:
         abort(404)
 
-    # Construction des URLs d'images
     poster_path = movie.get("poster_path")
     backdrop_path = movie.get("backdrop_path")
 
-    poster_url = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else None
-    backdrop_url = f"https://image.tmdb.org/t/p/original{backdrop_path}" if backdrop_path else None
+    poster_url = "https://image.tmdb.org/t/p/w500%s" % poster_path if poster_path else None
+    backdrop_url = "https://image.tmdb.org/t/p/original%s" % backdrop_path if backdrop_path else None
 
-    # Casting
     credits = movie.get("credits", {})
     cast = credits.get("cast", []) if isinstance(credits, dict) else []
     main_cast = [member.get("name") for member in cast[:6] if member.get("name")]
 
-    # --- NOUVEAU : Vérifier si le film est déjà dans la liste ---
+    # Vérifier si le film est déjà dans la liste ---
     interaction = None
     if current_user.is_authenticated:
-        # On cherche s'il existe une liaison User-Film pour cet ID
         interaction = Commentaire.query.filter_by(
-            ID_user=current_user.ID_user, 
+            ID_user=current_user.ID_user,
             ID_film=tmdb_id
         ).first()
 
@@ -752,7 +697,7 @@ def movie_detail(tmdb_id: int):
         poster_url=poster_url,
         backdrop_url=backdrop_url,
         main_cast=main_cast,
-        interaction=interaction  # On passe l'info au template
+        interaction=interaction
     )
 
 
@@ -761,14 +706,25 @@ def movie_detail(tmdb_id: int):
 def api_recommendations():
     """API pour récupérer les recommandations personnalisées."""
     try:
-        from flask import request
         from controllers.recommendation_controller import RecommendationController
+        from controllers.watchlist_controller import WatchlistController
         limit = int(request.args.get('limit', 20))
+        
+        # Vérifier si la watchlist est vide pour déterminer si les recommandations sont aléatoires
+        watchlist = WatchlistController.get_user_watchlist(current_user.ID_user)
+        is_random = not watchlist or len(watchlist) == 0
+        
         recommendations = RecommendationController.get_recommendations(
             current_user.ID_user,
             limit=limit
         )
-        return jsonify({"movies": recommendations})
-    except Exception as e:
-        logger.error(f"Erreur lors de la génération des recommandations: {str(e)}", exc_info=True)
-        return jsonify({"error": "Erreur serveur lors de la génération des recommandations", "movies": []}), 500
+        return jsonify({
+            "movies": recommendations,
+            "is_random": is_random
+        })
+    except ImportError as e:
+        logger.error("Erreur d'importation du contrôleur de recommandations: %s", str(e), exc_info=True)
+        return jsonify({"error": "Erreur de configuration du serveur", "movies": []}), 500
+    except (ValueError, TypeError, AttributeError) as e:
+        logger.error("Erreur de traitement des données lors de la génération des recommandations: %s", str(e), exc_info=True)
+        return jsonify({"error": "Erreur de traitement des données", "movies": []}), 500
