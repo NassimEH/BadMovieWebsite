@@ -1,5 +1,6 @@
 """Application principale Flask - Point d'entrée."""
-from flask import Flask, render_template
+from flask import Flask, render_template, send_from_directory
+import os
 from extensions import db, login_manager
 from config import Config
 from routes.auth_routes import auth_bp
@@ -8,7 +9,7 @@ from routes.watchlist_routes import watchlist_bp
 from routes.settings_routes import settings_bp
 from models import User
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='/static')
 app.config.from_object(Config)
 
 db.init_app(app)
@@ -26,6 +27,13 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(movie_bp)
 app.register_blueprint(watchlist_bp)
 app.register_blueprint(settings_bp)
+
+
+# Route explicite pour servir les fichiers statiques (nécessaire pour Vercel)
+@app.route('/static/<path:filename>')
+def static_files(filename):
+    """Sert les fichiers statiques."""
+    return send_from_directory(app.static_folder, filename)
 
 
 @app.route('/')
