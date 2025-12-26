@@ -2,12 +2,17 @@
 import sys
 import os
 
-# Ajouter le répertoire racine au path Python
+# Obtenir le répertoire racine du projet (un niveau au-dessus de api/)
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Ajouter le répertoire racine au path Python
 if root_dir not in sys.path:
     sys.path.insert(0, root_dir)
 
-# Importer l'application Flask
+# Changer le répertoire de travail vers la racine pour que les chemins relatifs fonctionnent
+os.chdir(root_dir)
+
+# Importer l'application Flask APRÈS avoir changé le répertoire de travail
 from app import app
 from extensions import db
 

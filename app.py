@@ -9,7 +9,10 @@ from routes.watchlist_routes import watchlist_bp
 from routes.settings_routes import settings_bp
 from models import User
 
-app = Flask(__name__, static_folder='static', static_url_path='/static')
+# Configuration du chemin static pour fonctionner sur Vercel
+# Utiliser un chemin absolu basé sur l'emplacement de app.py
+_static_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
+app = Flask(__name__, static_folder=_static_folder, static_url_path='/static')
 app.config.from_object(Config)
 
 db.init_app(app)
@@ -33,31 +36,37 @@ app.register_blueprint(settings_bp)
 @app.route('/static/<path:filename>')
 def static_files(filename):
     """Sert les fichiers statiques."""
-    import os
-    from flask import abort
+    from flask import abort, Response
+    import mimetypes
     
-    # Obtenir le chemin absolu du dossier static
-    # Sur Vercel, le fichier app.py est à la racine, donc static/ est au même niveau
-    current_file = os.path.abspath(__file__)  # Chemin de app.py
-    current_dir = os.path.dirname(current_file)
-    static_dir = os.path.join(current_dir, 'static')
-    
-    # Vérifier si le dossier existe, sinon essayer depuis le répertoire parent
-    if not os.path.exists(static_dir):
-        # Si on est dans api/, remonter d'un niveau
-        parent_dir = os.path.dirname(current_dir)
-        static_dir = os.path.join(parent_dir, 'static')
+    # Utiliser le static_folder configuré dans Flask
+    static_dir = app.static_folder
+    file_path = os.path.join(static_dir, filename)
     
     # Vérifier que le fichier existe
-    file_path = os.path.join(static_dir, filename)
-    if not os.path.exists(file_path):
+    if not os.path.exists(file_path) or not os.path.isfile(file_path):
         # Log pour debug (sera visible dans les logs Vercel)
         print(f"Fichier non trouvé: {file_path}")
         print(f"Recherche dans: {static_dir}")
         print(f"Fichier demandé: {filename}")
+        print(f"Répertoire de travail: {os.getcwd()}")
+        print(f"Fichier app.py: {os.path.abspath(__file__)}")
         abort(404)
     
-    return send_from_directory(static_dir, filename)
+    # Lire et servir le fichier
+    try:
+        with open(file_path, 'rb') as f:
+            content = f.read()
+        
+        # Déterminer le type MIME
+        mimetype, _ = mimetypes.guess_type(file_path)
+        if not mimetype:
+            mimetype = 'application/octet-stream'
+        
+        return Response(content, mimetype=mimetype)
+    except Exception as e:
+        print(f"Erreur lors de la lecture du fichier {file_path}: {e}")
+        abort(500)
 
 
 @app.route('/')
