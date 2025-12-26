@@ -33,7 +33,31 @@ app.register_blueprint(settings_bp)
 @app.route('/static/<path:filename>')
 def static_files(filename):
     """Sert les fichiers statiques."""
-    return send_from_directory(app.static_folder, filename)
+    import os
+    from flask import abort
+    
+    # Obtenir le chemin absolu du dossier static
+    # Sur Vercel, le fichier app.py est à la racine, donc static/ est au même niveau
+    current_file = os.path.abspath(__file__)  # Chemin de app.py
+    current_dir = os.path.dirname(current_file)
+    static_dir = os.path.join(current_dir, 'static')
+    
+    # Vérifier si le dossier existe, sinon essayer depuis le répertoire parent
+    if not os.path.exists(static_dir):
+        # Si on est dans api/, remonter d'un niveau
+        parent_dir = os.path.dirname(current_dir)
+        static_dir = os.path.join(parent_dir, 'static')
+    
+    # Vérifier que le fichier existe
+    file_path = os.path.join(static_dir, filename)
+    if not os.path.exists(file_path):
+        # Log pour debug (sera visible dans les logs Vercel)
+        print(f"Fichier non trouvé: {file_path}")
+        print(f"Recherche dans: {static_dir}")
+        print(f"Fichier demandé: {filename}")
+        abort(404)
+    
+    return send_from_directory(static_dir, filename)
 
 
 @app.route('/')
