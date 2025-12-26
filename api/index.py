@@ -16,6 +16,12 @@ os.chdir(root_dir)
 from app import app
 from extensions import db
 
+# Reconfigurer le static_folder pour utiliser le répertoire de travail actuel
+# (nécessaire car app.py calcule le chemin avant le changement de répertoire)
+static_folder_path = os.path.join(root_dir, 'static')
+if os.path.exists(static_folder_path):
+    app.static_folder = static_folder_path
+
 # Initialiser la base de données au démarrage
 def init_db():
     """Initialise la base de données."""

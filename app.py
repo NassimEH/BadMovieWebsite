@@ -36,37 +36,34 @@ app.register_blueprint(settings_bp)
 @app.route('/static/<path:filename>')
 def static_files(filename):
     """Sert les fichiers statiques."""
-    from flask import abort, Response
-    import mimetypes
+    from flask import abort
     
-    # Utiliser le static_folder configuré dans Flask
-    static_dir = app.static_folder
-    file_path = os.path.join(static_dir, filename)
+    # Liste des chemins possibles pour le dossier static
+    current_dir = os.getcwd()
+    possible_dirs = [
+        os.path.join(current_dir, 'static'),  # Dossier static à la racine
+        os.path.join(current_dir, 'public', 'static'),  # Dossier public/static (pour Vercel)
+        app.static_folder if app.static_folder else None,  # static_folder configuré
+    ]
     
-    # Vérifier que le fichier existe
-    if not os.path.exists(file_path) or not os.path.isfile(file_path):
-        # Log pour debug (sera visible dans les logs Vercel)
-        print(f"Fichier non trouvé: {file_path}")
-        print(f"Recherche dans: {static_dir}")
-        print(f"Fichier demandé: {filename}")
-        print(f"Répertoire de travail: {os.getcwd()}")
-        print(f"Fichier app.py: {os.path.abspath(__file__)}")
-        abort(404)
+    # Filtrer les chemins None et vérifier l'existence
+    for static_dir in possible_dirs:
+        if static_dir and os.path.exists(static_dir) and os.path.isdir(static_dir):
+            file_path = os.path.join(static_dir, filename)
+            if os.path.exists(file_path) and os.path.isfile(file_path):
+                try:
+                    return send_from_directory(static_dir, filename)
+                except Exception as e:
+                    # Continuer à essayer les autres chemins
+                    print(f"Erreur avec {static_dir}: {e}")
+                    continue
     
-    # Lire et servir le fichier
-    try:
-        with open(file_path, 'rb') as f:
-            content = f.read()
-        
-        # Déterminer le type MIME
-        mimetype, _ = mimetypes.guess_type(file_path)
-        if not mimetype:
-            mimetype = 'application/octet-stream'
-        
-        return Response(content, mimetype=mimetype)
-    except Exception as e:
-        print(f"Erreur lors de la lecture du fichier {file_path}: {e}")
-        abort(500)
+    # Si aucun chemin n'a fonctionné, logger pour debug
+    print(f"Fichier static non trouvé: {filename}")
+    print(f"Répertoire de travail: {current_dir}")
+    print(f"Chemins testés: {possible_dirs}")
+    print(f"app.static_folder: {app.static_folder}")
+    abort(404)
 
 
 @app.route('/')
