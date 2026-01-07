@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.37.0 (fb0539e64)
+  labels:
+    io.kompose.service: web
+  name: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: web
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml
+        kompose.version: 1.37.0 (fb0539e64)
+      labels:
+        io.kompose.service: web
+    spec:
+      containers:
+        - env:
+            - name: DATABASE_URL
+              value: postgresql://badmovie:badmovie@db:5432/badmovie
+            - name: FLASK_APP
+              value: app.py
+            - name: PYTHONUNBUFFERED
+              value: "1"
+          envFrom:
+            - configMapRef:
+                name: env
+          image: web
+          name: badmovie-app
+          ports:
+            - containerPort: 5000
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /app/routes
+              name: web-cm2
+            - mountPath: /app/controllers
+              name: web-cm3
+      restartPolicy: Always
+      volumes:
+        - configMap:
+            name: web-cm2
+          name: web-cm2
+        - configMap:
+            name: web-cm3
+          name: web-cm3

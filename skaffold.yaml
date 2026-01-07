@@ -1,0 +1,21 @@
+apiVersion: skaffold/v4beta13
+kind: Config
+metadata:
+  name: badmoviewebsite
+build:
+  local: 
+    push: false
+  artifacts:
+    - image: web 
+      docker:
+        dockerfile: Dockerfile
+manifests:
+  rawYaml:
+    - db-deployment.yaml
+    - db-service.yaml
+    - env-configmap.yaml
+    - postgres-data-persistentvolumeclaim.yaml
+    - web-cm2-configmap.yaml
+    - web-cm3-configmap.yaml
+    - web-deployment.yaml
+    - web-service.yaml
